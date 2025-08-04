@@ -1,0 +1,149 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\Nipl;
+use Illuminate\Support\Facades\Validator;
+
+class NiplController extends Controller
+{
+
+    /**
+     * List Nipl milik user yang login.
+     * (Kalau perlu admin bisa ubah agar mengembalikan semua)
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+        $nipl = Nipl::where('user_id', $user->id)->get();
+
+        return response()->json([
+            'message' => 'Daftar Nipl user.', 
+            'data' => $nipl
+        ]);
+    }
+
+    /**
+     * Tampilkan detail satu Nipl (pastikan milik user).
+     */
+    public function show(Request $request, $id)
+    {
+        $user = $request->user();
+        $nipl = Nipl::where('id', $id)->where('user_id', $user->id)->first();
+
+        if (! $nipl) {
+            return response()->json([
+                'message' => 'Nipl tidak ditemukan atau bukan milik Anda.'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Detail Nipl.', 
+            'data' => $nipl
+        ]);
+    }
+
+    /**
+     * Buat Nipl baru untuk user yang login.
+     */
+    public function store(Request $request)
+    {
+        $user = $request->user();
+
+        if (Nipl::where('user_id', $user->id)->exists()) {
+        return response()->json([
+            'message' => 'User sudah memiliki NIPL.',
+        ], 409);
+    }
+
+        $validator = Validator::make($request->all(), [
+            'email'       => 'required|email',
+            // 'no_nipl'       => 'required|min:6|max:6|integer',
+            'no_rekening' => 'required|string',
+            'bank'        => 'required|string',
+            'no_telepon'  => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validasi gagal.',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $noNipl = str_pad(mt_rand(0, 999999), 8, '0', STR_PAD_LEFT);
+
+        $nipl = Nipl::create([
+            'user_id'     => $user->id,
+            'no_nipl'     => $noNipl,
+            'email'       => $request->email,
+            'no_rekening' => $request->no_rekening,
+            'bank'        => $request->bank,
+            'no_telepon'  => $request->no_telepon,
+        ]);
+
+        return response()->json([
+            'message' => 'Nipl berhasil dibuat.',
+            'data'    => $nipl
+        ], 201);
+    }
+
+    /**
+     * Update Nipl milik user.
+     */
+    public function update(Request $request, $id)
+    {
+        $user = $request->user();
+        $nipl = Nipl::where('id', $id)->where('user_id', $user->id)->first();
+
+        if (! $nipl) {
+            return response()->json([
+                'message' => 'Nipl tidak ditemukan atau bukan milik Anda.'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'email'       => 'sometimes|required|email',
+            'no_rekening' => 'sometimes|required|string',
+            'bank'        => 'sometimes|required|string',
+            'no_telepon'  => 'sometimes|required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validasi gagal.',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $nipl->fill($validator->validated());
+        $nipl->save();
+
+        return response()->json([
+            'message' => 'Nipl berhasil diupdate.',
+            'data'    => $nipl
+        ]);
+    }
+
+    /**
+     * Hapus Nipl milik user.
+     */
+    public function destroy(Request $request, $id)
+    {
+        $user = $request->user();
+        $nipl = Nipl::where('id', $id)->where('user_id', $user->id)->first();
+
+        if (! $nipl) {
+            return response()->json([
+                'message' => 'Nipl tidak ditemukan atau bukan milik Anda.'
+            ], 404);
+        }
+
+        $nipl->delete();
+
+        return response()->json([
+            'message' => 'Nipl berhasil dihapus.'
+        ]);
+    }
+}
