@@ -85,9 +85,16 @@ class LelangBarangController extends Controller
     }
 
     // hapus barang
-    public function destroy( LelangBarang $id )
+    public function destroy( $id )
     {
-        $id->delete();
+        $barang = LelangBarang::find($id);
+
+        if (!$barang) {
+            return response()->json(['message' => 'Barang tidak ditemukan.'], 404);
+        }
+
+        $barang->delete();
+
         return response()->json([
             'message' => 'Barang berhasil dihapus'
         ], 200);
