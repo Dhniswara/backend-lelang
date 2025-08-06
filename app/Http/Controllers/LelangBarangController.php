@@ -60,13 +60,13 @@ class LelangBarangController extends Controller
 
     $lelang->fill($data); // Mengisi model hanya dengan data yang ada di $data
     $lelang->save();
-    
+
     return response()->json($lelang);
 }
-    
-    
-    
-    
+
+
+
+
     /**
      * Tutup lelang secara manual (set status selesai).
     */
@@ -82,5 +82,14 @@ class LelangBarangController extends Controller
         $lelang->save();
 
         return response()->json($lelang);
+    }
+
+    // hapus barang
+    public function destroy( LelangBarang $id )
+    {
+        $id->delete();
+        return response()->json([
+            'message' => 'Barang berhasil dihapus'
+        ], 200);
     }
 }

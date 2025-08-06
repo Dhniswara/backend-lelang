@@ -38,6 +38,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/{id}', [LelangBarangController::class, 'show']);
         Route::post('/', [LelangBarangController::class, 'store']);
         Route::put('/{id}/barang', [LelangBarangController::class, 'update']);
+        Route::delete('/{id}/barang', [LelangBarangController::class, 'destroy']);
     });
 
     // Routing nipl
