@@ -8,27 +8,19 @@ use Illuminate\Validation\Rule;
 
 class LelangBarangController extends Controller
 {
-    /**
-     * Lihat semua barang lelang (misal untuk daftar).
-     */
+
     public function index()
     {
         $items = LelangBarang::orderBy('waktu_mulai', 'desc')->get();
         return response()->json($items);
     }
 
-    /**
-     * Lihat detail satu barang lelang.
-     */
     public function show($id)
     {
         $item = LelangBarang::findOrFail($id);
         return response()->json($item);
     }
 
-    /**
-     * Tambah barang lelang baru.
-     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -37,7 +29,8 @@ class LelangBarangController extends Controller
             'harga_awal' => 'required|integer|min:0',
             'waktu_mulai'   => ['required', 'date_format:Y-m-d H:i:s'],
             'waktu_selesai' => ['required', 'date_format:Y-m-d H:i:s', 'after:waktu_mulai'],
-            'bid_time' => 'nullable',
+            'bid_time' => 'nullable'
+
         ]);
 
         $data['status'] = 'aktif';
@@ -48,46 +41,35 @@ class LelangBarangController extends Controller
         return response()->json($lelang, 201);
     }
 
-    /**
- * Update data lelang (nama, deskripsi, harga_awal, waktu, status, dll).
- */
-public function update(Request $request, $id)
-{
-    $lelang = LelangBarang::findOrFail($id);
 
+    public function update(Request $request, $id)
+{
     $rules = [
-        'nama'           => 'sometimes|required|string|max:255',
-        'deskripsi'      => 'sometimes|nullable|string',
-        'harga_awal'     => 'sometimes|required|integer|min:0',
-        'waktu_mulai'    => ['sometimes', 'required', 'date_format:Y-m-d H:i:s'],
-        'waktu_selesai'  => ['sometimes', 'required', 'date_format:Y-m-d H:i:s'],
-        'status'         => ['sometimes', Rule::in(['aktif', 'selesai', 'dibatalkan'])],
-        'bid_time'       => 'sometimes|nullable|date_format:Y-m-d H:i:s',
+        'nama_barang' => 'sometimes|required|string|max:255',
+        'deskripsi' => 'sometimes|nullable|string',
+        'harga_awal' => 'sometimes|required|integer|min:0',
+        'waktu_mulai' => ['sometimes', 'required', 'date_format:Y-m-d H:i:s'],
+        'waktu_selesai' => ['sometimes', 'required', 'date_format:Y-m-d H:i:s'],
+        'status' => ['sometimes', Rule::in(['aktif', 'selesai', 'dibatalkan'])],
+        'bid_time' => 'sometimes|nullable|date_format:Y-m-d H:i:s',
     ];
 
-    $data = $request->validate($rules);
+    $data = $request->validate($rules); // Mengambil data yang lolos validasi
 
-    // // jika kedua waktu ada, pastikan selesai > mulai
-    // if (isset($data['waktu_mulai'], $data['waktu_selesai'])) {
-    //     if (strtotime($data['waktu_selesai']) <= strtotime($data['waktu_mulai'])) {
-    //         return response()->json([
-    //             'message' => 'waktu_selesai harus setelah waktu_mulai.',
-    //         ], 422);
-    //     }
-    // }
+    $lelang = LelangBarang::findOrFail($id);
 
-    $lelang->fill($data);
+    $lelang->fill($data); // Mengisi model hanya dengan data yang ada di $data
     $lelang->save();
-
+    
     return response()->json($lelang);
 }
-
-
-
-
+    
+    
+    
+    
     /**
      * Tutup lelang secara manual (set status selesai).
-     */
+    */
     public function tutupLelang($id)
     {
         $lelang = LelangBarang::findOrFail($id);
@@ -101,5 +83,4 @@ public function update(Request $request, $id)
 
         return response()->json($lelang);
     }
-
 }

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('nama_barang');
             $table->text('deskripsi')->nullable();
-            $table->unsignedBigInteger('harga_awal');
+            $table->string('harga_awal');
             $table->dateTime('waktu_mulai');
             $table->dateTime('waktu_selesai');
             $table->enum('status', ['aktif', 'selesai', 'dibatalkan'])->default('aktif');

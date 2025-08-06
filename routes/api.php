@@ -27,18 +27,20 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
+
+    // Test User
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-    // Routing Barang
-    Route::prefix('lelang-barang')->group(function () {
-            Route::get('/', [LelangBarangController::class, 'index']);
-            Route::get('/{id}', [LelangBarangController::class, 'show']);
-            Route::post('/', [LelangBarangController::class, 'store']);
-            Route::post('/{id}/barang', [LelangBarangController::class, 'update']);
-        });
+    // Routing CRUD Barang Lelang
+    Route::middleware(['isadmin'])->prefix('lelang-barang')->group(function () {
+        Route::get('/', [LelangBarangController::class, 'index']);
+        Route::get('/{id}', [LelangBarangController::class, 'show']);
+        Route::post('/', [LelangBarangController::class, 'store']);
+        Route::put('/{id}/barang', [LelangBarangController::class, 'update']);
+    });
 
-    // routing nipl
+    // Routing nipl
     Route::prefix('nipl')->group(function () {
         Route::get('/', [NiplController::class, 'index']);
         Route::post('/', [NiplController::class, 'store']);
@@ -51,7 +53,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
             Route::get('/', [HargaBidController::class, 'index']);
         });
 
-        
+
 
 
 

@@ -15,10 +15,11 @@ class IsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && auth()->user()->user_type === 'admin') {
+        if (auth()->check() && auth()->user()->role === 'admin') {
         return $next($request);
     }
 
-        return redirect('/home')->with('error', 'Unauthorized access.');
+        // return redirect('/home')->with('error', 'Unauthorized access.');
+        abort(403, 'Unauthorized access.');
     }
 }
