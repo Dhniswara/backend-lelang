@@ -15,13 +15,13 @@ class Kernel extends ConsoleKernel
     //  * @return void
     //  */
     protected $commands = [
-        UpdateLelangStatus::class,
+        
     ];
 
     protected function schedule(Schedule $schedule): void
     {
-        $schedule->job('update:lelang-status')->everyMinute();
-        // $schedule->command('log:something')->everyMinute();
+        // $schedule->command('inspire')->hourly();
+        $schedule->command('barang:update-status-barang')->everyMinute();
     }
 
     /**
