@@ -17,11 +17,21 @@ class AuthController extends Controller
             'password' => 'required|min:8|confirmed'
         ]);
 
+            // Simpan avatar jika ada
+        if ($request->hasFile('avatar')) {
+            $avatar = $request->file('avatar');
+            $avatarName = uniqid() . '.' . $avatar->getClientOriginalExtension();
+            $avatar->move(public_path('avatars'), $avatarName);
+
+    $data['avatar'] = 'avatars/' . $avatarName;
+}
+
+
         $data['password'] = Hash::make($data['password']);
         $data['role'] = 'user';
 
         $user = User::create($data);
-        
+
         if ($user) {
             return response()->json(['user' => $user], 201);
         }
@@ -59,7 +69,7 @@ class AuthController extends Controller
         ], 200);
     }
 
-    
+
     public function user() {
         $farrel = User::all();
 
