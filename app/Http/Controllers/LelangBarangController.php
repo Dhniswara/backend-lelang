@@ -25,7 +25,7 @@ class LelangBarangController extends Controller
     {
         $data = $request->validate([
             'nama_barang' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
+            'deskripsi' => 'required|string',
             'harga_awal' => 'required|integer|min:0',
             'waktu_mulai'   => ['required', 'date_format:Y-m-d H:i:s'],
             'waktu_selesai' => ['required', 'date_format:Y-m-d H:i:s', 'after:waktu_mulai'],
@@ -44,47 +44,37 @@ class LelangBarangController extends Controller
 
     public function update(Request $request, $id)
 {
-    $rules = [
+    $request->validate([
         'nama_barang' => 'sometimes|required|string|max:255',
         'deskripsi' => 'sometimes|nullable|string',
-        'harga_awal' => 'sometimes|required|integer|min:0',
+        'harga_awal' => 'sometimes|required|integer',
         'waktu_mulai' => ['sometimes', 'required', 'date_format:Y-m-d H:i:s'],
         'waktu_selesai' => ['sometimes', 'required', 'date_format:Y-m-d H:i:s'],
         'status' => ['sometimes', Rule::in(['aktif', 'selesai', 'dibatalkan'])],
         'bid_time' => 'sometimes|nullable|date_format:Y-m-d H:i:s',
-    ];
+    ]);
 
-    $data = $request->validate($rules); // Mengambil data yang lolos validasi
+    // $data = $request->validate($rules); // Mengambil data yang lolos validasi
 
     $lelang = LelangBarang::findOrFail($id);
 
-    $lelang->fill($data); // Mengisi model hanya dengan data yang ada di $data
+    // $lelang->fill($data); 
+    $lelang->nama_barang = $request->nama_barang;
+    $lelang->deskripsi = $request->deskripsi;
+    $lelang->harga_awal = $request->harga_awal;
+    $lelang->waktu_mulai = $request->waktu_mulai;
+    $lelang->waktu_selesai = $request->waktu_selesai;
+    $lelang->status = $request->status;
+    $lelang->bid_time = $request->bid_time;
     $lelang->save();
 
-    return response()->json($lelang);
+    return response()->json([
+        "message" => "barang berhasil di update"
+    ], 200);
 }
 
 
-
-
-    /**
-     * Tutup lelang secara manual (set status selesai).
-    */
-    public function tutupLelang($id)
-    {
-        $lelang = LelangBarang::findOrFail($id);
-
-        if ($lelang->status === 'selesai') {
-            return response()->json(['message' => 'Lelang sudah selesai.'], 400);
-        }
-
-        $lelang->status = 'selesai';
-        $lelang->save();
-
-        return response()->json($lelang);
-    }
-
-    // hapus barang
+    // Hapus barang
     public function destroy( $id )
     {
         $barang = LelangBarang::find($id);

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('lelang_barangs', function (Blueprint $table) {
             $table->id();
             $table->string('nama_barang');
-            $table->text('deskripsi')->nullable();
+            $table->text('deskripsi');
             $table->string('harga_awal');
             $table->dateTime('waktu_mulai');
             $table->dateTime('waktu_selesai');
@@ -22,6 +22,7 @@ return new class extends Migration
             $table->dateTime('bid_time')->nullable(); 
             $table->timestamps();
         });
+
     }
 
     /**
