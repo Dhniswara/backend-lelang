@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NiplController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\HargaBidController;
 use App\Http\Controllers\LelangBarangController;
 
@@ -31,6 +32,11 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Test User
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::post('/profile', [ProfileController::class, 'update']);
+});
 
     // Routing CRUD Barang Lelang
     Route::middleware(['isadmin'])->prefix('lelang-barang')->group(function () {
