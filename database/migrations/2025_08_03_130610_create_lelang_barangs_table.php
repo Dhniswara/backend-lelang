@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('lelang_barangs', function (Blueprint $table) {
             $table->id();
+            $table->string('gambar_barang');
             $table->string('nama_barang');
             $table->text('deskripsi');
             $table->string('harga_awal');
+            $table->string('harga_akhir')->nullable();
             $table->dateTime('waktu_mulai');
             $table->dateTime('waktu_selesai');
             $table->enum('status', ['aktif', 'selesai', 'dibatalkan'])->default('aktif');

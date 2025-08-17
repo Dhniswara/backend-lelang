@@ -10,9 +10,11 @@ class LelangBarang extends Model
     use HasFactory;
 
     protected $fillable = [
+        'gambar_barang',
         'nama_barang',
         'deskripsi',
         'harga_awal',
+        'harga_akhir',
         'waktu_mulai',
         'waktu_selesai',
         'status',

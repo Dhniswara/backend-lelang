@@ -6,7 +6,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NiplController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\HargaBidController;
+use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\LelangBarangController;
+use App\Http\Controllers\XenditController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,14 +30,23 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
 
+    // Profile
+    Route::post('/edit/user/{id}', [AuthController::class, 'update']);
+
     // Test User
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
-    // Routing CRUD Barang Lelang
-    Route::middleware(['isadmin'])->prefix('lelang-barang')->group(function () {
+
+    // Menampilkan barang untuk user
+    Route::prefix('lelang-barang')->group(function () {
         Route::get('/', [LelangBarangController::class, 'index']);
         Route::get('/{id}', [LelangBarangController::class, 'show']);
+    });
+
+
+    // Routing CRUD Barang Lelang
+    Route::middleware(['isadmin'])->prefix('lelang-barang')->group(function () {
         Route::post('/', [LelangBarangController::class, 'store']);
         Route::put('/{id}/barang', [LelangBarangController::class, 'update']);
         Route::delete('/{id}/barang', [LelangBarangController::class, 'destroy']);
@@ -48,23 +59,19 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/{id}', [NiplController::class, 'show']);
         Route::put('/{id}', [NiplController::class, 'update']);
         Route::delete('/{id}', [NiplController::class, 'destroy']);
-
-        Route::prefix('harga')->group(function () {
-            Route::post('/', [HargaBidController::class, 'store']);
-            Route::get('/', [HargaBidController::class, 'index']);
-        });
-
-
-
-
-
-
-        // // Midtrans: buat snap token (harus user terautentikasi)
-        // Route::post('/payment/token', [PaymentController::class, 'token']);
-        // // (Opsional) endpoint untuk cek status/refresh jika mau
-        // Route::get('/payment/status/{order_id}', [PaymentController::class, 'status']);
     });
 
-    // Webhook Midtrans: tidak memakai auth karena dipanggil oleh Midtrans
-    // Route::post('/payment/notification', [PaymentController::class, 'notification']);
+    // Harga bid / tawaran
+    Route::prefix('harga-bid')->group(function () {
+        Route::post('/', [HargaBidController::class, 'store']);
+        Route::get('/', [HargaBidController::class, 'index']);
+    });
+
+    // Midtrans
+    // Route::post('/midtrans/create', [MidtransController::class, 'createTransaction']);
+    // Route::post('/midtrans/notification', [MidtransController::class, 'notificationHandler']);
+
+    // Xendit
+    Route::post('/xendit/create-invoice', [XenditController::class, 'createInvoice']);
+    Route::post('/xendit/callback', [XenditController::class, 'callback']);
 });
