@@ -41,11 +41,11 @@ class CheckoutController extends Controller
 
         $apiInstance = new InvoiceApi();
         $createInvoiceRequest = new CreateInvoiceRequest([
-            'external_id' => $uuid,
-            'description' => $barang->deskripsi,
-            'amount' => $barang->harga_awal,
-            'currency' => 'IDR',
-            "customer" => [
+            'external_id'  => $uuid,
+            'description'  => $barang->deskripsi,
+            'amount'       => $barang->harga_awal,
+            'currency'     => 'IDR',
+            "customer"     => [
                 "name" => "Kafka",
                 "email" => "kafka@gmail.com"
             ],

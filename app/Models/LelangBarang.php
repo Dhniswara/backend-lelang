@@ -12,6 +12,7 @@ class LelangBarang extends Model
     protected $fillable = [
         'gambar_barang',
         'nama_barang',
+        'kategori_id',
         'deskripsi',
         'harga_awal',
         'harga_akhir',
@@ -20,4 +21,9 @@ class LelangBarang extends Model
         'status',
         'bid_time',
     ];
+
+    public function category()
+{
+    return $this->belongsTo(Category::class, 'kategori_id');
+}
 }

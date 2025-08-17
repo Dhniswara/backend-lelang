@@ -9,10 +9,6 @@ use Illuminate\Support\Facades\Validator;
 class NiplController extends Controller
 {
 
-    /**
-     * List Nipl milik user yang login.
-     * (Kalau perlu admin bisa ubah agar mengembalikan semua)
-     */
     public function index(Request $request)
     {
         $user = $request->user();
@@ -24,9 +20,6 @@ class NiplController extends Controller
         ]);
     }
 
-    /**
-     * Tampilkan detail satu Nipl (pastikan milik user).
-     */
     public function show(Request $request, $id)
     {
         $user = $request->user();
@@ -44,9 +37,6 @@ class NiplController extends Controller
         ]);
     }
 
-    /**
-     * Buat Nipl baru untuk user yang login.
-     */
     public function store(Request $request)
     {
         $user = $request->user();
@@ -59,7 +49,6 @@ class NiplController extends Controller
 
         $validator = Validator::make($request->all(), [
             'email'       => 'required|email',
-            // 'no_nipl'       => 'required|min:6|max:6|integer',
             'no_rekening' => 'required|string',
             'bank'        => 'required|string',
             'no_telepon'  => 'required|string',
@@ -89,42 +78,40 @@ class NiplController extends Controller
         ], 201);
     }
 
-    /**
-     * Update Nipl milik user.
-     */
-    public function update(Request $request, $id)
-    {
-        $user = $request->user();
-        $nipl = Nipl::where('id', $id)->where('user_id', $user->id)->first();
 
-        if (! $nipl) {
-            return response()->json([
-                'message' => 'Nipl tidak ditemukan atau bukan milik Anda.'
-            ], 404);
-        }
+    // public function update(Request $request, $id)
+    // {
+    //     $user = $request->user();
+    //     $nipl = Nipl::where('id', $id)->where('user_id', $user->id)->first();
 
-        $validator = Validator::make($request->all(), [
-            'email'       => 'sometimes|required|email',
-            'no_rekening' => 'sometimes|required|string',
-            'bank'        => 'sometimes|required|string',
-            'no_telepon'  => 'sometimes|required|string',
-        ]);
+    //     if (! $nipl) {
+    //         return response()->json([
+    //             'message' => 'Nipl tidak ditemukan atau bukan milik Anda.'
+    //         ], 404);
+    //     }
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal.',
-                'errors'  => $validator->errors(),
-            ], 422);
-        }
+    //     $validator = Validator::make($request->all(), [
+    //         'email'       => 'sometimes|required|email',
+    //         'no_rekening' => 'sometimes|required|string',
+    //         'bank'        => 'sometimes|required|string',
+    //         'no_telepon'  => 'sometimes|required|string',
+    //     ]);
 
-        $nipl->fill($validator->validated());
-        $nipl->save();
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'message' => 'Validasi gagal.',
+    //             'errors'  => $validator->errors(),
+    //         ], 422);
+    //     }
 
-        return response()->json([
-            'message' => 'Nipl berhasil diupdate.',
-            'data'    => $nipl
-        ]);
-    }
+    //     $nipl->fill($validator->validated());
+    //     $nipl->save();
+
+    //     return response()->json([
+    //         'message' => 'Nipl berhasil diupdate.',
+    //         'data'    => $nipl
+    //     ]);
+    // }
 
     /**
      * Hapus Nipl milik user.

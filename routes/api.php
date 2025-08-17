@@ -4,11 +4,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NiplController;
+use App\Http\Controllers\XenditController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HargaBidController;
 use App\Http\Controllers\MidtransController;
 use App\Http\Controllers\LelangBarangController;
-use App\Http\Controllers\XenditController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,8 +45,16 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::get('/{id}', [LelangBarangController::class, 'show']);
     });
 
+    // CRUD Kategori
+    Route::middleware(['isadmin'])->prefix('categories')->group(function () {
+            Route::get('/', [CategoryController::class, 'index']);      
+            Route::post('/', [CategoryController::class, 'store']);     
+            Route::get('/{id}', [CategoryController::class, 'show']);   
+            Route::put('/{id}', [CategoryController::class, 'update']);
+            Route::delete('/{id}', [CategoryController::class, 'destroy']); 
+    });
 
-    // Routing CRUD Barang Lelang
+    // CRUD Barang Lelang
     Route::middleware(['isadmin'])->prefix('lelang-barang')->group(function () {
         Route::post('/', [LelangBarangController::class, 'store']);
         Route::put('/{id}/barang', [LelangBarangController::class, 'update']);
@@ -72,6 +81,6 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Route::post('/midtrans/notification', [MidtransController::class, 'notificationHandler']);
 
     // Xendit
-    Route::post('/xendit/create-invoice', [XenditController::class, 'createInvoice']);
-    Route::post('/xendit/callback', [XenditController::class, 'callback']);
+    // Route::post('/xendit/create-invoice', [XenditController::class, 'createInvoice']);
+    // Route::post('/xendit/callback', [XenditController::class, 'callback']);
 });

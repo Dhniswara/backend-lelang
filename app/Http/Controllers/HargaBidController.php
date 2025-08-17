@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\HargaBid;
 use App\Models\LelangBarang;
+use App\Models\Nipl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -30,6 +31,15 @@ class HargaBidController extends Controller
                 'message' => 'Validasi gagal.',
                 'errors'  => $validator->errors(),
             ], 422);
+        }
+
+        // User Belum punya NIPL
+        $nipl = Nipl::where('user_id', $user->id)->first();
+
+        if (!$nipl) {
+            return response()->json([
+                "message" => "anda belum memiliki NIPL, silahkan membuat NIPL terlebih dahulu   "
+            ], 403);
         }
 
         // Lelang selesai

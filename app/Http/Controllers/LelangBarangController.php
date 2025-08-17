@@ -10,13 +10,14 @@ class LelangBarangController extends Controller
 
     public function index()
     {
-        $items = LelangBarang::all();
+        // sekalian eager load kategori biar langsung keliatan
+        $items = LelangBarang::with('category')->get();
         return response()->json($items);
     }
 
     public function show($id)
     {
-        $item = LelangBarang::findOrFail($id);
+        $item = LelangBarang::with('category')->findOrFail($id);
         return response()->json($item);
     }
 
@@ -24,12 +25,13 @@ class LelangBarangController extends Controller
     {
         $data = $request->validate([
             'gambar_barang' => 'image|mimes:jpeg,png,jpg,svg|max:2048',
-            'nama_barang' => 'required|string|max:255',
-            'deskripsi' => 'required|string',
-            'harga_awal' => 'required|integer|min:0',
+            'nama_barang'   => 'required|string|max:255',
+            'kategori_id'   => 'required|exists:categories,id',
+            'deskripsi'     => 'required|string',
+            'harga_awal'    => 'required|integer|min:0',
             'waktu_mulai'   => 'required|date_format:Y-m-d H:i:s',
             'waktu_selesai' => 'required|date_format:Y-m-d H:i:s|after:waktu_mulai',
-            'bid_time' => 'nullable'
+            'bid_time'      => 'nullable'
         ]);
 
         if ($request->hasFile('gambar_barang')) {
@@ -52,21 +54,21 @@ class LelangBarangController extends Controller
     {
         $barang = LelangBarang::findOrFail($id);
 
-        $request->validate([
+        $data = $request->validate([
             'gambar_barang' => 'sometimes|image|mimes:jpeg,png,jpg,svg|max:2048',
             'nama_barang'   => 'sometimes|required|string|max:255',
+            'kategori_id'   => 'sometimes|exists:categories,id',
             'deskripsi'     => 'sometimes|nullable|string',
             'harga_awal'    => 'sometimes|required|integer',
             'waktu_mulai'   => 'sometimes|required|date_format:Y-m-d H:i:s',
-            'waktu_selesai' => 'sometimes|required|date_format:Y-m-d H:i:s',
+            'waktu_selesai' => 'sometimes|required|date_format:Y-m-d H:i:s|after:waktu_mulai',
             'status'        => 'sometimes',
             'bid_time'      => 'sometimes|nullable|date_format:Y-m-d H:i:s',
         ]);
 
         if ($request->hasFile('gambar_barang')) {
-            // Hapus avatar lama kalau ada
-            if ($barang->avatar && file_exists(public_path($barang->avatar))) {
-                unlink(public_path($barang->avatar));
+            if ($barang->gambar_barang && file_exists(public_path($barang->gambar_barang))) {
+                unlink(public_path($barang->gambar_barang));
             }
 
             $gambarBarang = $request->file('gambar_barang');
@@ -76,20 +78,13 @@ class LelangBarangController extends Controller
             $data['gambar_barang'] = 'gambar-barang/' . $namaGambar;
         }
 
-        $barang->nama_barang = $request->nama_barang;
-        $barang->deskripsi = $request->deskripsi;
-        $barang->harga_awal = $request->harga_awal;
-        $barang->waktu_mulai = $request->waktu_mulai;
-        $barang->waktu_selesai = $request->waktu_selesai;
-        // $barang->status = $request->status;
-        // $barang->bid_time = $request->bid_time;
-        $barang->save();
+        $barang->update($data);
 
         return response()->json([
-            "message" => "barang berhasil di update"
+            "message" => "Barang berhasil diupdate",
+            "data" => $barang
         ], 200);
     }
-
 
     // Hapus barang
     public function destroy($id)

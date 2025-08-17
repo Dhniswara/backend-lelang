@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('gambar_barang');
             $table->string('nama_barang');
+            $table->unsignedBigInteger('kategori_id');
             $table->text('deskripsi');
             $table->string('harga_awal');
             $table->string('harga_akhir')->nullable();
@@ -23,8 +24,9 @@ return new class extends Migration
             $table->enum('status', ['aktif', 'selesai', 'dibatalkan'])->default('aktif');
             $table->dateTime('bid_time')->nullable(); 
             $table->timestamps();
-        });
 
+            $table->foreign('kategori_id')->references('id')->on('categories')->onDelete('cascade');
+        });
     }
 
     /**
