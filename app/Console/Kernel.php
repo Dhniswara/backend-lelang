@@ -2,8 +2,13 @@
 
 namespace App\Console;
 
+use Carbon\Carbon;
+
+use App\Models\LelangBarang;
+use Illuminate\Support\Facades\Log;
+// use App\Console\Commands\UpdateLelangStatus;
 use Illuminate\Console\Scheduling\Schedule;
-use App\Console\Commands\UpdateLelangStatus;
+use App\Events\LelangUpdateStatus;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
@@ -18,11 +23,27 @@ class Kernel extends ConsoleKernel
         
     ];
 
-    protected function schedule(Schedule $schedule): void
+    protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
-        $schedule->command('barang:update-status-barang')->everyMinute();
-    }
+                
+            // app/Console/Kernel.php (bagian schedule)
+        $schedule->call(function () {
+            $now = Carbon::now('Asia/Jakarta');
+
+            $lelangs = LelangBarang::where('status', '!=', 'selesai')
+                        ->where('waktu_selesai', '<=', $now)
+                        ->get();
+
+            foreach ($lelangs as $lelang) {
+                $lelang->status = 'selesai';
+                $lelang->save();
+
+                Log::info("Dispatching LelangSelesaiEvent for id: {$lelang->id}");
+                event(new LelangUpdateStatus($lelang)); // kirim model, bukan $lelang->id
+            }
+        })->everyMinute();
+
+            }
 
     /**
      * Register the commands for the application.

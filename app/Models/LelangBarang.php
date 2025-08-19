@@ -17,7 +17,7 @@ class LelangBarang extends Model
         'harga_akhir',
         'waktu_mulai',
         'waktu_selesai',
-        'status',
+        'status',   
         'bid_time',
     ];
 }

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use Carbon\Carbon;
 use App\Models\LelangBarang;
+use App\Events\LelangUpdated;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\SerializesModels;
@@ -21,6 +22,7 @@ class UpdateStatusLelangJob implements ShouldQueue
 
     public function handle(): void
     {
+
         // Ambil semua lelang yang masih aktif dan waktunya sudah habis
         // $lelangs = LelangBarang::where('status', 'aktif')
         //     ->where('waktu_selesai', '<=', now())
@@ -38,6 +40,6 @@ class UpdateStatusLelangJob implements ShouldQueue
 
         // }
         // Log::info("Cron job Berhasil di jalankan " . date('Y-m-d H:i:s'));
-        info(message:'Something');
+        // info(message:'Something');
     }
 }
