@@ -12,10 +12,10 @@ class AuthController extends Controller
     {
 
         $data =  $request->validate([
-            'avatar' => 'image|mimes:jpeg,png,jpg,svg|max:2048|nullable',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8|confirmed'
+            'avatar'    => 'image|mimes:jpeg,png,jpg,svg|max:2048|nullable',
+            'name'      => 'required|string|max:255',
+            'email'     => 'required|email|unique:users,email',
+            'password'  => 'required|min:8|confirmed'
         ]);
 
 
@@ -84,8 +84,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $data =  $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:8'
+            'email'     => 'required|email',
+            'password'  => 'required|min:8'
         ]);
 
         if (auth()->guard()->attempt($data)) {
