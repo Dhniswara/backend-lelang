@@ -27,7 +27,7 @@ class LelangUpdateStatus implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('lelang'); // public channel, pakai PrivateChannel kalau perlu auth
+        return new Channel('lelang'); 
     }
 
     // nama event yang client bind

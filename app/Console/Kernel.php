@@ -39,7 +39,7 @@ class Kernel extends ConsoleKernel
                 $lelang->save();
 
                 Log::info("Dispatching LelangSelesaiEvent for id: {$lelang->id}");
-                event(new LelangUpdateStatus($lelang)); // kirim model, bukan $lelang->id
+                event(new LelangUpdateStatus($lelang)); 
             }
         })->everyMinute();
 
