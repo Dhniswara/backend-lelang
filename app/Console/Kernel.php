@@ -19,32 +19,28 @@ class Kernel extends ConsoleKernel
     //  * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
     //  * @return void
     //  */
-    protected $commands = [
-        
-    ];
+    protected $commands = [];
 
     protected function schedule(Schedule $schedule)
     {
-                
-            // app/Console/Kernel.php (bagian schedule)
+
+        // app/Console/Kernel.php (bagian schedule)
         $schedule->call(function () {
             $now = Carbon::now('Asia/Jakarta');
 
             $lelangs = LelangBarang::where('status', '!=', 'selesai')
-                        ->where('waktu_selesai', '<=', $now)
-                        ->get();
+                ->where('waktu_selesai', '<=', $now)
+                ->get();
 
             foreach ($lelangs as $lelang) {
                 $lelang->status = 'selesai';
                 $lelang->save();
 
                 Log::info("Dispatching LelangSelesaiEvent for id: {$lelang->id}");
-                event(new LelangUpdateStatus($lelang)); 
+                event(new LelangUpdateStatus($lelang));
             }
         })->everyMinute();
-
-            }
-
+    }
     /**
      * Register the commands for the application.
      *

@@ -10,7 +10,6 @@ class LelangBarangController extends Controller
 
     public function index()
     {
-        // sekalian eager load kategori biar langsung keliatan
         $items = LelangBarang::with('category')->get();
         return response()->json($items);
     }

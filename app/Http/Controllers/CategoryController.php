@@ -69,14 +69,14 @@ class CategoryController extends Controller
         }
 
         $request->validate([
-            'nama_kategori' => 'sometimes|required|string|max:255|unique:categories,nama,' . $id,
+            'nama_kategori' => 'sometimes|required|string|max:255' . $id,
             'deskripsi' => 'nullable|string',
         ]);
 
         $category->update([
-            'nama_kategori' => $request->nama ?? $category->nama,
+            'nama_kategori' => $request->nama_kategori ?? $category->nama_kategori,
             'deskripsi' => $request->deskripsi ?? $category->deskripsi,
-        ]);
+        ]); 
 
         return response()->json([
             'success' => true,
