@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use Xendit\Configuration;
 use App\Models\Transaction;
@@ -8,32 +8,52 @@ use Illuminate\Support\Str;
 use App\Models\LelangBarang;
 use Illuminate\Http\Request;
 use Xendit\Invoice\InvoiceApi;
+use Xendit\XenditSdkException;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Xendit\Invoice\CreateInvoiceRequest;
 
-class CheckoutController extends Controller
+class ApiCheckoutController extends Controller
 {
-    public function showItem($id)
-    {
-        $barang = LelangBarang::findOrFail($id);
-        return view('lelang.show', compact('barang'));
-    }
-
-    public function transactions()
-    {
-        $transactions = Transaction::with('barang')
-            ->where('user_id', Auth::id())
-            ->latest()->get();
-        return view('transactions.index', compact('transactions'));
-    }
-
     public function __construct()
     {
         Configuration::setXenditKey(config('xendit.secret_key'));
     }
 
+    // Detail barang
+    public function showItem($id)
+    {
+        $barang = LelangBarang::find($id);
+
+        if (!$barang) {
+            return response()->json([
+                'message' => 'Barang tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => $barang
+        ]);
+    }
+
+    // Daftar transaksi user login
+    public function transactions()
+    {
+        $transactions = Transaction::with('barang')
+            ->where('user_id', Auth::id())
+            ->latest()->get();
+
+        return response()->json([
+            'data' => $transactions
+        ]);
+    }
+
+    // Buat pembayaran
     public function payment(Request $request)
     {
+        $request->validate([
+            'id' => 'required|exists:lelang_barangs,id'
+        ]);
 
         $barang = LelangBarang::find($request->id);
 
@@ -47,19 +67,18 @@ class CheckoutController extends Controller
             'amount'       => $barang->harga_awal,
             'currency'     => 'IDR',
             "customer"     => [
-                "name" => "Ucok",
-                "email" => "ucok@gmail.com"
+                "name" => Auth::user()->name,
+                "email" => Auth::user()->email
             ],
-            "success_redirect_url" => url('http://localhost:8000'),
-            "failure_redirect_url" => url('http://localhost:8000'),
+            "success_redirect_url" => url('/api/payment/success'),
+            "failure_redirect_url" => url('/api/payment/failed'),
         ]);
 
-        try {            
+        try {
             $result = $apiInstance->createInvoice($createInvoiceRequest);
 
-            // Simpan transaksi
             $transactions = new Transaction();
-            $transactions->user_id = 2;
+            $transactions->user_id = Auth::id();
             $transactions->price = $barang->harga_awal;
             $transactions->barang_id = $barang->id;
             $transactions->checkout_link = $result['invoice_url'];
@@ -67,12 +86,12 @@ class CheckoutController extends Controller
             $transactions->status = "pending";
             $transactions->save();
 
-            // Kembalikan JSON ke FE
             return response()->json([
+                'message' => 'Invoice berhasil dibuat',
                 'invoice_url' => $result['invoice_url'],
                 'external_id' => $uuid
             ]);
-        } catch (\Xendit\XenditSdkException $e) {
+        } catch (XenditSdkException $e) {
             return response()->json([
                 'message' => 'Gagal membuat invoice',
                 'error' => $e->getMessage()
@@ -80,23 +99,33 @@ class CheckoutController extends Controller
         }
     }
 
+    // Webhook xendit
     public function notification($id)
     {
         $apiInstance = new InvoiceApi();
 
         $result = $apiInstance->getInvoices(null, $id);
 
-        // Get data
-        $transactions = Transaction::where('external_id', $id)->firstOrFail();
+        $transaction = Transaction::where('external_id', $id)->first();
 
-        if ($transactions->status == "settled") {
-            return response()->json('payment anda telah berhasil di proses');
+        if (!$transaction) {
+            return response()->json([
+                'message' => 'Transaksi tidak ditemukan'
+            ], 404);
         }
 
-        // Update status
-        $transactions->status = $result[0]['status'];
-        $transactions->save();
+        if ($transaction->status == "settled") {
+            return response()->json([
+                'message' => 'Pembayaran sudah berhasil diproses'
+            ]);
+        }
 
-        return response()->json('Success');
+        $transaction->status = $result[0]['status'];
+        $transaction->save();
+
+        return response()->json([
+            'message' => 'Status transaksi berhasil diperbarui',
+            'status'  => $transaction->status
+        ]);
     }
 }

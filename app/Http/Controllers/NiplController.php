@@ -17,7 +17,7 @@ class NiplController extends Controller
         return response()->json([
             'message' => 'Daftar Nipl user.', 
             'data' => $nipl
-        ]);
+        ], 200);
     }
 
     public function show(Request $request, $id)
