@@ -10,15 +10,13 @@ use Illuminate\Support\Facades\Validator;
 
 class HargaBidController extends Controller
 {
-    public function index()
-    {
+    public function index() {
         $allData = HargaBid::with(['user', 'lelang'])->get();
 
         return response()->json($allData);
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $user = $request->user();
 
         $validator = Validator::make($request->all(), [
@@ -55,15 +53,10 @@ class HargaBidController extends Controller
 
         $lelang = LelangBarang::find($request->lelang_id);
 
-        // Total bid user
-        $totalBidUser = HargaBid::where('user_id', $user->id)
-            ->where('lelang_id', $request->lelang_id)
-            ->count();
-
-        // Logic jika user sudah menawar 2x
-        if ($totalBidUser >= 2) {
+        // Logic jika harga yang ditawarkan user dibawah harga awal
+        if ($request->harga <= $lelang->harga_awal) {
             return response()->json([
-                'message' => 'Anda hanya bisa menawar maksimal 2 kali pada barang ini.'
+                'message' => 'Harga yang dipasang harus lebih tinggi dari harga awal'
             ], 403);
         }
 

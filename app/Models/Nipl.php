@@ -14,8 +14,6 @@ class Nipl extends Model
         'user_id',
         'email',
         'no_nipl',
-        'no_rekening',
-        'bank',
         'no_telepon',
     ];
 

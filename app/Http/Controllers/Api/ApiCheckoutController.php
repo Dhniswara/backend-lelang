@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\HargaBid;
 use Xendit\Configuration;
 use App\Models\Transaction;
 use Illuminate\Support\Str;
@@ -15,14 +16,12 @@ use Xendit\Invoice\CreateInvoiceRequest;
 
 class ApiCheckoutController extends Controller
 {
-    public function __construct()
-    {
+    public function __construct() {
         Configuration::setXenditKey(config('xendit.secret_key'));
     }
 
     // Detail barang
-    public function showItem($id)
-    {
+    public function showItem($id) {
         $barang = LelangBarang::find($id);
 
         if (!$barang) {
@@ -37,8 +36,7 @@ class ApiCheckoutController extends Controller
     }
 
     // Daftar transaksi user login
-    public function transactions()
-    {
+    public function transactions() {
         $transactions = Transaction::with('barang')
             ->where('user_id', Auth::id())
             ->latest()->get();
@@ -49,49 +47,64 @@ class ApiCheckoutController extends Controller
     }
 
     // Buat pembayaran
-    public function payment(Request $request)
-    {
-        $request->validate([
-            'id' => 'required|exists:lelang_barangs,id'
-        ]);
+    public function payment(Request $request) {
 
-        $barang = LelangBarang::find($request->id);
+        $barang = LelangBarang::findOrFail($request->id);
 
+        // Ambil bid tertinggi untuk barang ini
+        $highestBid = HargaBid::where('lelang_id', $barang->id)
+            ->orderBy('harga', 'desc')
+            ->first();
+
+        // Cek apakah ada bid
+        if (!$highestBid) {
+            return response()->json([
+                'message' => 'Belum ada penawaran untuk barang ini'
+            ], 403);
+        }
+
+        // Cek apakah user login adalah pemenang
+        if (Auth::id() !== $highestBid->user_id) {
+            return response()->json([
+                'message' => 'Hanya pemenang dengan penawaran tertinggi yang dapat melakukan checkout'
+            ], 403);
+        }
+
+        // Gunakan harga bid tertinggi sebagai harga invoice
         $uuid = (string) Str::uuid();
-
         $apiInstance = new InvoiceApi();
 
         $createInvoiceRequest = new CreateInvoiceRequest([
             'external_id'  => $uuid,
             'description'  => $barang->deskripsi,
-            'amount'       => $barang->harga_awal,
+            'amount'       => $highestBid->harga,
             'currency'     => 'IDR',
             "customer"     => [
-                "name" => Auth::user()->name,
-                "email" => Auth::user()->email
+                "name"  => Auth::user()->name,
+                "email" => Auth::user()->email,
             ],
-            "success_redirect_url" => url('/api/payment/success'),
-            "failure_redirect_url" => url('/api/payment/failed'),
+            "success_redirect_url" => url('/transactions'),
+            "failure_redirect_url" => url('/transactions'),
         ]);
 
         try {
             $result = $apiInstance->createInvoice($createInvoiceRequest);
 
-            $transactions = new Transaction();
-            $transactions->user_id = Auth::id();
-            $transactions->price = $barang->harga_awal;
-            $transactions->barang_id = $barang->id;
-            $transactions->checkout_link = $result['invoice_url'];
-            $transactions->external_id = $uuid;
-            $transactions->status = "pending";
-            $transactions->save();
+            // Simpan transaksi
+            $transaction = new Transaction();
+            $transaction->user_id = Auth::id();
+            $transaction->price = $highestBid->harga;
+            $transaction->barang_id = $barang->id;
+            $transaction->checkout_link = $result['invoice_url'];
+            $transaction->external_id = $uuid;
+            $transaction->status = "pending";
+            $transaction->save();
 
             return response()->json([
-                'message' => 'Invoice berhasil dibuat',
                 'invoice_url' => $result['invoice_url'],
                 'external_id' => $uuid
             ]);
-        } catch (XenditSdkException $e) {
+        } catch (\Xendit\XenditSdkException $e) {
             return response()->json([
                 'message' => 'Gagal membuat invoice',
                 'error' => $e->getMessage()
@@ -100,8 +113,7 @@ class ApiCheckoutController extends Controller
     }
 
     // Webhook xendit
-    public function notification($id)
-    {
+    public function notification($id) {
         $apiInstance = new InvoiceApi();
 
         $result = $apiInstance->getInvoices(null, $id);

@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\ApiCheckoutController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -8,6 +7,8 @@ use App\Http\Controllers\NiplController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\HargaBidController;
 use App\Http\Controllers\LelangBarangController;
+use App\Http\Controllers\NiplCheckoutController;
+use App\Http\Controllers\Api\ApiCheckoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,7 +70,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     
     // Routing nipl
     Route::prefix('nipl')->group(function () {
-        Route::post('/', [NiplController::class, 'store']);
+        // Route::post('/', [NiplController::class, 'store']);
         Route::put('/{id}', [NiplController::class, 'update']);
         Route::delete('/{id}', [NiplController::class, 'destroy']);
     });
@@ -82,6 +83,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
 
     // XENDIT PAYMENT GATEWAY //
+
+    // Barang
     
     // Detail barang
     Route::get('/checkout/item/{id}', [ApiCheckoutController::class, 'showItem']);
@@ -91,4 +94,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Buat pembayaran (generate invoice)
     Route::post('/checkout/payment', [ApiCheckoutController::class, 'payment']);
+
+
+    // NIPL //
+
+     // Beli NIPL (buat invoice Xendit)
+    Route::post('/nipl/buy', [NiplCheckoutController::class, 'buyNipl']);
+
+    // Webhook notifikasi Xendit (status pembayaran)
+    Route::post('/nipl/notification/{id}', [NiplCheckoutController::class, 'notification']);
 });

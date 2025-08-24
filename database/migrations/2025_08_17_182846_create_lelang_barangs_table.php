@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('nama_barang');
             $table->unsignedBigInteger('kategori_id');
             $table->text('deskripsi');
-            $table->string('harga_awal');
-            $table->string('harga_akhir')->nullable();
+            $table->decimal('harga_awal', 15,2);
+            $table->decimal('harga_akhir', 15,2)->nullable();
             $table->dateTime('waktu_mulai');
             $table->dateTime('waktu_selesai');
             $table->enum('status', ['aktif', 'selesai', 'dibatalkan'])->default('aktif');
