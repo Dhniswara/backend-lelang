@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('nipls', function (Blueprint $table) {
+        Schema::create('nipl_transactions', function (Blueprint $table) {
             $table->id();
-            $table->string('email');
-            $table->integer('no_nipl')->unique();
-            $table->unsignedBigInteger('user_id')->unique();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('external_id');
+            $table->string('checkout_link');
             $table->string('no_telepon');
+            $table->decimal('price', 12, 2)->default(25000); 
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('nipls');
+        Schema::dropIfExists('nipl_transactions');
     }
 };

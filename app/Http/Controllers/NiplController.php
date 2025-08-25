@@ -4,24 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Nipl;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class NiplController extends Controller
 {
 
-    public function index(Request $request)
-    {
+    public function index(Request $request) {
         $user = $request->user();
         $nipl = Nipl::where('user_id', $user->id)->get();
 
         return response()->json([
             'message' => 'Daftar Nipl user.', 
             'data' => $nipl
-        ]);
+        ], 200);
     }
 
-    public function show(Request $request, $id)
-    {
+    public function show(Request $request, $id) {
         $user = $request->user();
         $nipl = Nipl::where('id', $id)->where('user_id', $user->id)->first();
 
@@ -37,8 +36,7 @@ class NiplController extends Controller
         ]);
     }
 
-    public function store(Request $request)
-    {
+    public function store(Request $request) {
         $user = $request->user();
 
         if (Nipl::where('user_id', $user->id)->exists()) {
@@ -49,8 +47,6 @@ class NiplController extends Controller
 
         $validator = Validator::make($request->all(), [
             'email'       => 'required|email',
-            'no_rekening' => 'required|string',
-            'bank'        => 'required|string',
             'no_telepon'  => 'required|string',
         ]);
 
@@ -66,9 +62,7 @@ class NiplController extends Controller
         $nipl = Nipl::create([
             'user_id'     => $user->id,
             'no_nipl'     => $noNipl,
-            'email'       => $request->email,
-            'no_rekening' => $request->no_rekening,
-            'bank'        => $request->bank,
+            'email'       => Auth::user()->email,
             'no_telepon'  => $request->no_telepon,
         ]);
 
@@ -78,46 +72,7 @@ class NiplController extends Controller
         ], 201);
     }
 
-
-    // public function update(Request $request, $id)
-    // {
-    //     $user = $request->user();
-    //     $nipl = Nipl::where('id', $id)->where('user_id', $user->id)->first();
-
-    //     if (! $nipl) {
-    //         return response()->json([
-    //             'message' => 'Nipl tidak ditemukan atau bukan milik Anda.'
-    //         ], 404);
-    //     }
-
-    //     $validator = Validator::make($request->all(), [
-    //         'email'       => 'sometimes|required|email',
-    //         'no_rekening' => 'sometimes|required|string',
-    //         'bank'        => 'sometimes|required|string',
-    //         'no_telepon'  => 'sometimes|required|string',
-    //     ]);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'message' => 'Validasi gagal.',
-    //             'errors'  => $validator->errors(),
-    //         ], 422);
-    //     }
-
-    //     $nipl->fill($validator->validated());
-    //     $nipl->save();
-
-    //     return response()->json([
-    //         'message' => 'Nipl berhasil diupdate.',
-    //         'data'    => $nipl
-    //     ]);
-    // }
-
-    /**
-     * Hapus Nipl milik user.
-     */
-    public function destroy(Request $request, $id)
-    {
+    public function destroy(Request $request, $id) {
         $user = $request->user();
         $nipl = Nipl::where('id', $id)->where('user_id', $user->id)->first();
 
