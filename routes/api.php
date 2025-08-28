@@ -33,6 +33,12 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Test User
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    
+    // Get User yang login
+    Route::get('/user/isLogin', function (Request $request) {
+        return $request->user();
+    });
+
 
 
     // Menampilkan barang untuk user
