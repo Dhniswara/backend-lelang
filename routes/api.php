@@ -33,38 +33,35 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Test User
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
-    
+
     // Get User yang login
     Route::get('/user/isLogin', function (Request $request) {
         return $request->user();
     });
 
-
-
     // Menampilkan barang untuk user
     Route::prefix('lelang-barang')->group(function () {
-        Route::get('/', [LelangBarangController::class, 'index']);
+        Route::get('/', [LelangBarangController::class, 'index']);  
         Route::get('/{id}', [LelangBarangController::class, 'show']);
     });
-    
+
     // Menampilkan category untuk user
     Route::prefix('categories')->group(function () {
-        Route::get('/', [CategoryController::class, 'index']);      
-        Route::get('/{id}', [CategoryController::class, 'show']);   
+        Route::get('/', [CategoryController::class, 'index']);
+        Route::get('/{id}', [CategoryController::class, 'show']);
     });
-    
+
     // Menampilkan NIPL untuk user
     Route::prefix('nipl')->group(function () {
         Route::get('/', [NiplController::class, 'index']);
         Route::get('/{id}', [NiplController::class, 'show']);
-
     });
 
     // CRUD Kategori
     Route::middleware(['isadmin'])->prefix('categories')->group(function () {
-            Route::post('/', [CategoryController::class, 'store']);     
-            Route::put('/{id}', [CategoryController::class, 'update']);
-            Route::delete('/{id}', [CategoryController::class, 'destroy']); 
+        Route::post('/', [CategoryController::class, 'store']);
+        Route::put('/{id}', [CategoryController::class, 'update']);
+        Route::delete('/{id}', [CategoryController::class, 'destroy']);
     });
 
     // CRUD Barang Lelang
@@ -73,10 +70,15 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
         Route::put('/{id}/barang', [LelangBarangController::class, 'update']);
         Route::delete('/{id}/barang', [LelangBarangController::class, 'destroy']);
     });
-    
-    // Routing nipl
+
+    // Routing Buy nipl
     Route::prefix('nipl')->group(function () {
-        // Route::post('/', [NiplController::class, 'store']);
+        // Beli NIPL (buat invoice Xendit)
+        Route::post('/buy', [NiplCheckoutController::class, 'buyNipl']);
+
+        // Webhook notifikasi Xendit (status pembayaran)
+        Route::post('/notification/{id}', [NiplCheckoutController::class, 'notification']);
+
         Route::put('/{id}', [NiplController::class, 'update']);
         Route::delete('/{id}', [NiplController::class, 'destroy']);
     });
@@ -91,7 +93,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // XENDIT PAYMENT GATEWAY //
 
     // Barang
-    
+
     // Detail barang
     Route::get('/checkout/item/{id}', [ApiCheckoutController::class, 'showItem']);
 
@@ -100,13 +102,4 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Buat pembayaran (generate invoice)
     Route::post('/checkout/payment', [ApiCheckoutController::class, 'payment']);
-
-
-    // NIPL //
-
-     // Beli NIPL (buat invoice Xendit)
-    Route::post('/nipl/buy', [NiplCheckoutController::class, 'buyNipl']);
-
-    // Webhook notifikasi Xendit (status pembayaran)
-    Route::post('/nipl/notification/{id}', [NiplCheckoutController::class, 'notification']);
 });
