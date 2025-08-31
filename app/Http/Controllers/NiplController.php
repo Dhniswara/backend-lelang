@@ -36,41 +36,41 @@ class NiplController extends Controller
         ]);
     }
 
-    public function store(Request $request) {
-        $user = $request->user();
+    // public function store(Request $request) {
+    //     $user = $request->user();
 
-        if (Nipl::where('user_id', $user->id)->exists()) {
-        return response()->json([
-            'message' => 'User sudah memiliki NIPL.',
-        ], 409);
-    }
+    //     if (Nipl::where('user_id', $user->id)->exists()) {
+    //     return response()->json([
+    //         'message' => 'User sudah memiliki NIPL.',
+    //     ], 409);
+    // }
 
-        $validator = Validator::make($request->all(), [
-            'email'       => 'required|email',
-            'no_telepon'  => 'required|string',
-        ]);
+    //     $validator = Validator::make($request->all(), [
+    //         'email'       => 'required|email',
+    //         'no_telepon'  => 'required|string',
+    //     ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validasi gagal.',
-                'errors'  => $validator->errors(),
-            ], 422);
-        }
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'message' => 'Validasi gagal.',
+    //             'errors'  => $validator->errors(),
+    //         ], 422);
+    //     }
 
-        $noNipl = str_pad(mt_rand(0, 999999), 8, '0', STR_PAD_LEFT);
+    //     $noNipl = str_pad(mt_rand(0, 999999), 8, '0', STR_PAD_LEFT);
 
-        $nipl = Nipl::create([
-            'user_id'     => $user->id,
-            'no_nipl'     => $noNipl,
-            'email'       => Auth::user()->email,
-            'no_telepon'  => $request->no_telepon,
-        ]);
+    //     $nipl = Nipl::create([
+    //         'user_id'     => $user->id,
+    //         'no_nipl'     => $noNipl,
+    //         'email'       => Auth::user()->email,
+    //         'no_telepon'  => $request->no_telepon,
+    //     ]);
 
-        return response()->json([
-            'message' => 'Nipl berhasil dibuat.',
-            'data'    => $nipl
-        ], 201);
-    }
+    //     return response()->json([
+    //         'message' => 'Nipl berhasil dibuat.',
+    //         'data'    => $nipl
+    //     ], 201);
+    // }
 
     public function destroy(Request $request, $id) {
         $user = $request->user();
