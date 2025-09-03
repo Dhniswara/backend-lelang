@@ -33,21 +33,15 @@ class LelangBarangController extends Controller
             'bid_time'      => 'nullable'
         ]);
 
-        // if ($request->hasFile('gambar_barang')) {
-        //     $gambarBarang = $request->file('gambar_barang');
-        //     $namaGambar = uniqid() . '.' . $gambarBarang->getClientOriginalExtension();
-        //     $gambarBarang->move(public_path('gambar-barang'), $namaGambar);
-
-        //     $data['gambar_barang'] = 'gambar-barang/' . $namaGambar;
-        // }
-
         if ($request->hasFile('gambar_barang')) {
             $gambarBarang = $request->file('gambar_barang');
             $namaGambar = uniqid() . '.' . $gambarBarang->getClientOriginalExtension();
 
-            $path = $gambarBarang->storeAs('gambar-barang', $namaGambar, 'public');
+            // Simpan di storage/app/public/gambar-barang
+            $gambarBarang->storeAs('public/gambar-barang', $namaGambar);
 
-            $data['gambar_barang'] = 'storage/' . $path;
+            // Simpan path yang bisa diakses publik
+            $data['gambar_barang'] = 'storage/gambar-barang/' . $namaGambar;
         }
 
         $data['status'] = 'aktif';
@@ -56,6 +50,7 @@ class LelangBarangController extends Controller
 
         return response()->json($lelang, 201);
     }
+
 
 
     public function update(Request $request, $id)
