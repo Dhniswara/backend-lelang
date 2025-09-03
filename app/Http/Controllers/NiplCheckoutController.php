@@ -100,4 +100,8 @@ class NiplCheckoutController extends Controller
             'status' => $transaction->status
         ]);
     }
+
+    public function webhook () {
+        
+    }
 }

@@ -78,6 +78,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
         // Webhook notifikasi Xendit (status pembayaran)
         Route::post('/notification/{id}', [NiplCheckoutController::class, 'notification']);
+        Route::post('/notification/webhook', [NiplCheckoutController::class, 'webhook']);
 
         Route::put('/{id}', [NiplController::class, 'update']);
         Route::delete('/{id}', [NiplController::class, 'destroy']);
