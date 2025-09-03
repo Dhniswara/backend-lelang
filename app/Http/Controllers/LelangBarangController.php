@@ -53,8 +53,8 @@ class LelangBarangController extends Controller
 
         $lelang = LelangBarang::create($data);
 
-        // Tambahkan full URL biar di frontend gampang dipakai
-        $lelang->gambar_barang_url = url($lelang->gambar_barang);
+        // // Tambahkan full URL biar di frontend gampang dipakai
+        // $lelang->gambar_barang_url = url($lelang->gambar_barang);
 
         return response()->json($lelang, 201);
     }
