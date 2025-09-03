@@ -21,38 +21,43 @@ class LelangBarangController extends Controller
     }
 
     public function store(Request $request)
-{
-    $data = $request->validate([
-        'gambar_barang' => 'image|mimes:jpeg,png,jpg,svg|max:2048',
-        'nama_barang'   => 'required|string|max:255',
-        'kategori_id'   => 'required|exists:categories,id',
-        'deskripsi'     => 'required|string',
-        'harga_awal'    => 'required|integer|min:0',
-        'waktu_mulai'   => 'required|date_format:Y-m-d H:i:s',
-        'waktu_selesai' => 'required|date_format:Y-m-d H:i:s|after:waktu_mulai',
-        'bid_time'      => 'nullable'
-    ]);
+    {
+        $data = $request->validate([
+            'gambar_barang' => 'image|mimes:jpeg,png,jpg,svg|max:2048',
+            'nama_barang'   => 'required|string|max:255',
+            'kategori_id'   => 'required|exists:categories,id',
+            'deskripsi'     => 'required|string',
+            'harga_awal'    => 'required|integer|min:0',
+            'waktu_mulai'   => 'required|date_format:Y-m-d H:i:s',
+            'waktu_selesai' => 'required|date_format:Y-m-d H:i:s|after:waktu_mulai',
+            'bid_time'      => 'nullable'
+        ]);
 
-    if ($request->hasFile('gambar_barang')) {
-        $gambarBarang = $request->file('gambar_barang');
-        $namaGambar = uniqid() . '.' . $gambarBarang->getClientOriginalExtension();
+        // if ($request->hasFile('gambar_barang')) {
+        //     $gambarBarang = $request->file('gambar_barang');
+        //     $namaGambar = uniqid() . '.' . $gambarBarang->getClientOriginalExtension();
 
-        // Simpan file ke storage/app/public/gambar-barang
-        $gambarBarang->storeAs('public/gambar-barang', $namaGambar);
+        //     // Simpan file ke storage/app/public/gambar-barang
+        //     $gambarBarang->storeAs('public/gambar-barang', $namaGambar);
 
-        // Simpan path publik ke database
-        $data['gambar_barang'] = 'storage/gambar-barang/' . $namaGambar;
+        //     // Simpan path publik ke database
+        //     $data['gambar_barang'] = 'storage/gambar-barang/' . $namaGambar;
+        // }
+
+        if ($request->file('gambar_barang')) {
+            $validatedData['gambar_barang'] = $request->file('gambar_barang')->store('gambar-barang');
+        }
+
+
+        $data['status'] = 'aktif';
+
+        $lelang = LelangBarang::create($data);
+
+        // Tambahkan full URL biar di frontend gampang dipakai
+        $lelang->gambar_barang_url = url($lelang->gambar_barang);
+
+        return response()->json($lelang, 201);
     }
-
-    $data['status'] = 'aktif';
-
-    $lelang = LelangBarang::create($data);
-
-    // Tambahkan full URL biar di frontend gampang dipakai
-    $lelang->gambar_barang_url = url($lelang->gambar_barang);
-
-    return response()->json($lelang, 201);
-}
 
 
 
