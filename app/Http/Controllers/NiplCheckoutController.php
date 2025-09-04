@@ -101,7 +101,48 @@ class NiplCheckoutController extends Controller
         ]);
     }
 
-    public function webhook () {
-        
+    public function webhook(Request $request)
+{
+    // Ambil payload JSON dari webhook Xendit
+    $data = $request->all();
+
+    // Pastikan payload valid
+    if (!isset($data['external_id']) || !isset($data['status'])) {
+        return response()->json(['message' => 'Invalid payload'], 400);
     }
+
+    $externalId = $data['external_id'];
+    $status     = strtoupper($data['status']);
+
+    // Cari transaksi berdasarkan external_id
+    $transaction = NiplTransaction::where('external_id', $externalId)->first();
+
+    if (!$transaction) {
+        return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
+    }
+
+    // Update status transaksi
+    $transaction->status = $status;
+    $transaction->save();
+
+    // Kalau status sukses, buatkan NIPL untuk user
+    if ($status === 'PAID' || $status === 'SETTLED') {
+        if (!Nipl::where('user_id', $transaction->user_id)->exists()) {
+            $noNipl = str_pad(mt_rand(0, 999999), 8, '0', STR_PAD_LEFT);
+
+            Nipl::create([
+                'user_id'     => $transaction->user_id,
+                'no_nipl'     => $noNipl,
+                'email'       => $transaction->email,   // jangan pakai Auth di webhook
+                'no_telepon'  => $transaction->no_telepon,
+            ]);
+        }
+    }
+
+    return response()->json([
+        'message' => 'Status transaksi diperbarui',
+        'status'  => $transaction->status
+    ]);
+}
+
 }
