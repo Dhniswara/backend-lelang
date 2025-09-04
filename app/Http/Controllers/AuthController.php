@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -48,18 +49,11 @@ class AuthController extends Controller
             'password' => 'nullable|min:8|confirmed'
         ]);
 
-        // Handle avatar baru
-        if ($request->hasFile('avatar')) {
-            // Hapus avatar lama kalau ada
-            if ($user->avatar && file_exists(public_path($user->avatar))) {
-                unlink(public_path($user->avatar));
-            }
-
-            $avatar = $request->file('avatar');
-            $avatarName = uniqid() . '.' . $avatar->getClientOriginalExtension();
-            $avatar->move(public_path('avatars'), $avatarName);
-
-            $data['avatar'] = 'avatars/' . $avatarName;
+        if ($request->file('avatar')) {
+            if ($user->avatar && Storage::exists($user->avatar)) {
+            Storage::delete($user->avatar);
+        }
+            $data['avatar'] = $request->file('avatar')->store('avatar');
         }
 
         // Handle password baru
