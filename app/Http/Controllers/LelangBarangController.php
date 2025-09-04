@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\LelangBarang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LelangBarangController extends Controller
 {
@@ -77,16 +78,11 @@ class LelangBarangController extends Controller
             'bid_time'      => 'sometimes|nullable|date_format:Y-m-d H:i:s',
         ]);
 
-        if ($request->hasFile('gambar_barang')) {
-            if ($barang->gambar_barang && file_exists(public_path($barang->gambar_barang))) {
-                unlink(public_path($barang->gambar_barang));
-            }
-
-            $gambarBarang = $request->file('gambar_barang');
-            $namaGambar = uniqid() . '.' . $gambarBarang->getClientOriginalExtension();
-            $gambarBarang->move(public_path('gambar-barang'), $namaGambar);
-
-            $data['gambar_barang'] = 'gambar-barang/' . $namaGambar;
+        if ($request->file('gambar_barang')) {
+            if ($barang->gambar_barang && Storage::exists($barang->gambar_barang)) {
+            Storage::delete($barang->gambar_barang);
+        }
+            $data['gambar_barang'] = $request->file('gambar_barang')->store('gambar-barang');
         }
 
         $barang->update($data);
