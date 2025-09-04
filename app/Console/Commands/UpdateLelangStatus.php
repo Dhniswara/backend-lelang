@@ -26,17 +26,7 @@ class UpdateLelangStatus extends Command
      */
     public function handle()
 {
-    $nowJakarta = now('Asia/Jakarta');
-    $prevMinute = $nowJakarta->copy()->subMinute();
 
-    $updated = LelangBarang::where('status', 'aktif')
-        ->whereBetween('waktu_selesai', [
-            $prevMinute->toDateTimeString(),
-            $nowJakarta->toDateTimeString()
-        ])
-        ->update(['status' => 'selesai']);
-
-    $this->info("Status lelang yang diperbarui: $updated");
 }
 
 }

@@ -13,14 +13,19 @@ return new class extends Migration
     {
         Schema::create('lelang_barangs', function (Blueprint $table) {
             $table->id();
+            $table->string('gambar_barang');
             $table->string('nama_barang');
-            $table->text('deskripsi')->nullable();
-            $table->string('harga_awal');
+            $table->unsignedBigInteger('kategori_id');
+            $table->text('deskripsi');
+            $table->decimal('harga_awal', 15,2);
+            $table->decimal('harga_akhir', 15,2)->nullable();
             $table->dateTime('waktu_mulai');
             $table->dateTime('waktu_selesai');
             $table->enum('status', ['aktif', 'selesai', 'dibatalkan'])->default('aktif');
             $table->dateTime('bid_time')->nullable(); 
             $table->timestamps();
+
+            $table->foreign('kategori_id')->references('id')->on('categories')->onDelete('cascade');
         });
     }
 
