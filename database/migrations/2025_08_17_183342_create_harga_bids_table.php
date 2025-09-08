@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('nipls', function (Blueprint $table) {
+       Schema::create('harga_bids', function (Blueprint $table) {
             $table->id();
-            $table->string('email');
-            $table->integer('no_nipl')->unique();
-            $table->unsignedBigInteger('user_id')->unique();
+            $table->integer('harga');
+            $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('lelang_id');
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('no_telepon');
+            $table->foreign('lelang_id')->references('id')->on('lelang_barangs')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('nipls');
+        Schema::dropIfExists('harga_bids');
     }
 };

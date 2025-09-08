@@ -46,7 +46,6 @@ class User extends Authenticatable
     ];
 
     public function nipl () {
-        // return $this->hasOne(Nipl::class, 'user_id');
         return $this->hasOne(Nipl::class);
     }
 }

@@ -14,13 +14,15 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
             $table->unsignedBigInteger('barang_id');
-            $table->foreign('barang_id')->references('id')->on('lelang_barangs');
             $table->integer('price');
-            $table->enum('status', ['pending', 'paid'])->default('pending');
-            $table->integer('snap_token');
+            $table->string('checkout_link');
+            $table->string('external_id');
+            $table->string('status');
+
             $table->timestamps();
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('barang_id')->references('id')->on('lelang_barangs');
         });
     }
 
@@ -32,5 +34,3 @@ return new class extends Migration
         Schema::dropIfExists('transactions');
     }
 };
-
-

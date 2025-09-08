@@ -4,37 +4,41 @@ namespace App\Http\Controllers;
 
 use App\Models\LelangBarang;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 class LelangBarangController extends Controller
 {
 
     public function index()
     {
-        $items = LelangBarang::orderBy('waktu_mulai', 'desc')->get();
+        $items = LelangBarang::with('category')->get();
         return response()->json($items);
     }
 
     public function show($id)
     {
-        $item = LelangBarang::findOrFail($id);
+        $item = LelangBarang::with('category')->findOrFail($id);
         return response()->json($item);
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nama_barang' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'harga_awal' => 'required|integer|min:0',
-            'waktu_mulai'   => ['required', 'date_format:Y-m-d H:i:s'],
-            'waktu_selesai' => ['required', 'date_format:Y-m-d H:i:s', 'after:waktu_mulai'],
-            'bid_time' => 'nullable'
-
+            'gambar_barang' => 'image|mimes:jpeg,png,jpg,svg|max:2048',
+            'nama_barang'   => 'required|string|max:255',
+            'kategori_id'   => 'required|exists:categories,id',
+            'deskripsi'     => 'required|string',
+            'harga_awal'    => 'required|integer|min:0',
+            'waktu_mulai'   => 'required|date_format:Y-m-d H:i:s',
+            'waktu_selesai' => 'required|date_format:Y-m-d H:i:s|after:waktu_mulai',
+            'bid_time'      => 'nullable'
         ]);
 
-        $data['status'] = 'aktif';
+        if ($request->file('gambar_barang')) {
+            $data['gambar_barang'] = $request->file('gambar_barang')->store('gambar-barang');
+        }
 
+        $data['status'] = 'aktif';
 
         $lelang = LelangBarang::create($data);
 
@@ -42,45 +46,52 @@ class LelangBarangController extends Controller
     }
 
 
+
     public function update(Request $request, $id)
-{
-    $rules = [
-        'nama_barang' => 'sometimes|required|string|max:255',
-        'deskripsi' => 'sometimes|nullable|string',
-        'harga_awal' => 'sometimes|required|integer|min:0',
-        'waktu_mulai' => ['sometimes', 'required', 'date_format:Y-m-d H:i:s'],
-        'waktu_selesai' => ['sometimes', 'required', 'date_format:Y-m-d H:i:s'],
-        'status' => ['sometimes', Rule::in(['aktif', 'selesai', 'dibatalkan'])],
-        'bid_time' => 'sometimes|nullable|date_format:Y-m-d H:i:s',
-    ];
-
-    $data = $request->validate($rules); // Mengambil data yang lolos validasi
-
-    $lelang = LelangBarang::findOrFail($id);
-
-    $lelang->fill($data); // Mengisi model hanya dengan data yang ada di $data
-    $lelang->save();
-    
-    return response()->json($lelang);
-}
-    
-    
-    
-    
-    /**
-     * Tutup lelang secara manual (set status selesai).
-    */
-    public function tutupLelang($id)
     {
-        $lelang = LelangBarang::findOrFail($id);
+        $barang = LelangBarang::findOrFail($id);
 
-        if ($lelang->status === 'selesai') {
-            return response()->json(['message' => 'Lelang sudah selesai.'], 400);
+        $data = $request->validate([
+            'gambar_barang' => 'sometimes|image|mimes:jpeg,png,jpg,svg|max:2048',
+            'nama_barang'   => 'sometimes|required|string|max:255',
+            'kategori_id'   => 'sometimes|exists:categories,id',
+            'deskripsi'     => 'sometimes|nullable|string',
+            'harga_awal'    => 'sometimes|required|integer',
+            'waktu_mulai'   => 'sometimes|required|date_format:Y-m-d H:i:s',
+            'waktu_selesai' => 'sometimes|required|date_format:Y-m-d H:i:s|after:waktu_mulai',
+            'status'        => 'sometimes',
+            'bid_time'      => 'sometimes|nullable|date_format:Y-m-d H:i:s',
+        ]);
+
+        if ($request->file('gambar_barang')) {
+            if ($barang->gambar_barang && Storage::exists($barang->gambar_barang)) {
+            Storage::delete($barang->gambar_barang);
+        }
+            $data['gambar_barang'] = $request->file('gambar_barang')->store('gambar-barang');
+        }
+        
+
+        $barang->update($data);
+
+        return response()->json([
+            "message" => "Barang berhasil diupdate",
+            "data" => $barang
+        ], 200);
+    }
+
+    // Hapus barang
+    public function destroy($id)
+    {
+        $barang = LelangBarang::find($id);
+
+        if (!$barang) {
+            return response()->json(['message' => 'Barang tidak ditemukan.'], 404);
         }
 
-        $lelang->status = 'selesai';
-        $lelang->save();
+        $barang->delete();
 
-        return response()->json($lelang);
+        return response()->json([
+            'message' => 'Barang berhasil dihapus'
+        ], 200);
     }
 }
