@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\LelangBarang;
 use Illuminate\Console\Command;
+use App\Jobs\UpdateStatusLelangJob;
 
 
 class UpdateLelangStatus extends Command

@@ -14,102 +14,100 @@ use Xendit\Invoice\CreateInvoiceRequest;
 
 class CheckoutController extends Controller
 {
-    public function showItem($id) {
-        $barang = LelangBarang::findOrFail($id);
-        return view('lelang.show', compact('barang'));
+   public function __construct() {
+        Configuration::setXenditKey(config('xendit.secret_key'));
     }
 
+    // Detail barang
+    public function showItem($id) {
+        $barang = LelangBarang::find($id);
+
+        if (!$barang) {
+            return response()->json([
+                'message' => 'Barang tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => $barang
+        ]);
+    }
+
+    // Daftar transaksi user login
     public function transactions() {
         $transactions = Transaction::with('barang')
             ->where('user_id', Auth::id())
             ->latest()->get();
-        return view('transactions.index', compact('transactions'));
-    }
-
-    public function __construct() {
-        Configuration::setXenditKey(config('xendit.secret_key'));
-    }
-
-    public function payment(Request $request) {
-    $barang = LelangBarang::findOrFail($request->id);
-
-    // Ambil bid tertinggi untuk barang ini
-    $highestBid = HargaBid::where('lelang_id', $barang->id)
-        ->orderBy('harga', 'desc')
-        ->first();
-
-    // Cek apakah ada bid
-    if (!$highestBid) {
-        return response()->json([
-            'message' => 'Belum ada penawaran untuk barang ini'
-        ], 403);
-    }
-
-    // Cek apakah user login adalah pemenang
-    if (Auth::id() !== $highestBid->user_id ) {
-        return response()->json([
-            'message' => 'Hanya pemenang dengan penawaran tertinggi yang dapat melakukan checkout'
-        ], 403);
-    }
-
-    // Gunakan harga bid tertinggi sebagai harga invoice
-    $uuid = (string) Str::uuid();
-    $apiInstance = new InvoiceApi();
-
-    $createInvoiceRequest = new CreateInvoiceRequest([
-        'external_id'  => $uuid,
-        'description'  => $barang->deskripsi,
-        'amount'       => $highestBid->harga,
-        'currency'     => 'IDR',
-        "customer"     => [
-            "name"  => Auth::user()->name,
-            "email" => Auth::user()->email,
-        ],
-        "success_redirect_url" => url('/transactions'),
-        "failure_redirect_url" => url('/transactions'),
-    ]);
-
-    try {
-        $result = $apiInstance->createInvoice($createInvoiceRequest);
-
-        // Simpan transaksi
-        $transaction = new Transaction();
-        $transaction->user_id = Auth::id();
-        $transaction->price = $highestBid->harga;
-        $transaction->barang_id = $barang->id;
-        $transaction->checkout_link = $result['invoice_url'];
-        $transaction->external_id = $uuid;
-        $transaction->status = "pending";
-        $transaction->save();
 
         return response()->json([
-            'invoice_url' => $result['invoice_url'],
-            'external_id' => $uuid
+            'data' => $transactions
         ]);
-    } catch (\Xendit\XenditSdkException $e) {
-        return response()->json([
-            'message' => 'Gagal membuat invoice',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
 
-    public function notification($id) {
-        $apiInstance = new InvoiceApi();
+    // Buat pembayaran
+    public function payment(Request $request) {
 
-        $result = $apiInstance->getInvoices(null, $id);
+        $barang = LelangBarang::findOrFail($request->id);
 
-        // Get data
-        $transactions = Transaction::where('external_id', $id)->firstOrFail();
+        // Ambil bid tertinggi untuk barang ini
+        $highestBid = HargaBid::where('lelang_id', $barang->id)
+            ->orderBy('harga', 'desc')
+            ->first();
 
-        if ($transactions->status == "settled") {
-            return response()->json('payment anda telah berhasil di proses');
+        // Cek apakah ada bid
+        if (!$highestBid) {
+            return response()->json([
+                'message' => 'Belum ada penawaran untuk barang ini'
+            ], 403);
         }
 
-        // Update status
-        $transactions->status = $result[0]['status'];
-        $transactions->save();
+        // Cek apakah user login adalah pemenang
+        if (Auth::id() !== $highestBid->user_id) {
+            return response()->json([
+                'message' => 'Hanya pemenang dengan penawaran tertinggi yang dapat melakukan checkout'
+            ], 403);
+        }
 
-        return response()->json('Success');
+        // Gunakan harga bid tertinggi sebagai harga invoice
+        $uuid = (string) Str::uuid();
+        $apiInstance = new InvoiceApi();
+
+        $createInvoiceRequest = new CreateInvoiceRequest([
+            'external_id'  => $uuid,
+            'description'  => $barang->deskripsi,
+            'amount'       => $highestBid->harga,
+            'currency'     => 'IDR',
+            "customer"     => [
+                "name"  => Auth::user()->name,
+                "email" => Auth::user()->email,
+            ],
+            "success_redirect_url" => "http://localhost:3000/home",
+            "failure_redirect_url" => url('/transactions'),
+        ]);
+
+        try {
+            $result = $apiInstance->createInvoice($createInvoiceRequest);
+
+            // Simpan transaksi
+            $transaction = new Transaction();
+            $transaction->user_id = Auth::id();
+            $transaction->price = $highestBid->harga;
+            $transaction->barang_id = $barang->id;
+            $transaction->checkout_link = $result['invoice_url'];
+            $transaction->external_id = $uuid;
+            $transaction->status = "pending";
+            $transaction->save();
+
+            return response()->json([
+                'invoice_url' => $result['invoice_url'],
+                'external_id' => $uuid
+            ]);
+        } catch (\Xendit\XenditSdkException $e) {
+            return response()->json([
+                'message' => 'Gagal membuat invoice',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
+
 }

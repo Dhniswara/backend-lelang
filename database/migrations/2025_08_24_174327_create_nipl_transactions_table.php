@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('nipl_transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->string('email');
             $table->string('external_id');
             $table->string('checkout_link');
             $table->string('no_telepon');
