@@ -45,6 +45,7 @@ class AuthController extends Controller
             'password' => 'nullable|min:8|confirmed'
         ]);
 
+
         if ($request->file('avatar')) {
             if ($user->avatar && Storage::exists($user->avatar)) {
             Storage::delete($user->avatar);
