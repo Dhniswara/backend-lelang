@@ -19,12 +19,8 @@ class AuthController extends Controller
         ]);
 
 
-        if ($request->hasFile('avatar')) {
-            $avatar = $request->file('avatar');
-            $avatarName = uniqid() . '.' . $avatar->getClientOriginalExtension();
-            $avatar->move(public_path('avatars'), $avatarName);
-
-            $data['avatar'] = 'avatars/' . $avatarName;
+        if ($request->file('avatar')) {
+            $data['avatar'] = $request->file('avatar')->store('avatar');
         }
 
         $data['password'] = Hash::make($data['password']);
@@ -48,6 +44,7 @@ class AuthController extends Controller
             'email'    => 'required|email|unique:users,email,' . $user->id, // biar boleh pakai email lama
             'password' => 'nullable|min:8|confirmed'
         ]);
+
 
         if ($request->file('avatar')) {
             if ($user->avatar && Storage::exists($user->avatar)) {
