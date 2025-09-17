@@ -19,12 +19,8 @@ class AuthController extends Controller
         ]);
 
 
-        if ($request->hasFile('avatar')) {
-            $avatar = $request->file('avatar');
-            $avatarName = uniqid() . '.' . $avatar->getClientOriginalExtension();
-            $avatar->move(public_path('avatars'), $avatarName);
-
-            $data['avatar'] = 'avatars/' . $avatarName;
+        if ($request->file('avatar')) {
+            $data['avatar'] = $request->file('avatar')->store('avatar');
         }
 
         $data['password'] = Hash::make($data['password']);
