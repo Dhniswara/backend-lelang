@@ -8,6 +8,7 @@ class NiplTransaction extends Model
 {
     protected $fillable = [
         "user_id",
+        "email",
         "external_id",
         "checkout_link",
         "no_telepon",
