@@ -106,3 +106,5 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Buat pembayaran (generate invoice)
     Route::post('/checkout/payment', [ApiCheckoutController::class, 'payment']);
 });
+
+Route::post('/notification/webhook', [NiplCheckoutController::class, 'webhook']);

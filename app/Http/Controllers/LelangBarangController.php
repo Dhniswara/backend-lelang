@@ -4,21 +4,25 @@ namespace App\Http\Controllers;
 
 use App\Models\LelangBarang;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LelangBarangController extends Controller
 {
 
-    public function index() {
+    public function index()
+    {
         $items = LelangBarang::with('category')->get();
         return response()->json($items);
     }
 
-    public function show($id) {
+    public function show($id)
+    {
         $item = LelangBarang::with('category')->findOrFail($id);
         return response()->json($item);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $data = $request->validate([
             'gambar_barang' => 'image|mimes:jpeg,png,jpg,svg|max:2048',
             'nama_barang'   => 'required|string|max:255',
@@ -30,12 +34,8 @@ class LelangBarangController extends Controller
             'bid_time'      => 'nullable'
         ]);
 
-        if ($request->hasFile('gambar_barang')) {
-            $gambarBarang = $request->file('gambar_barang');
-            $namaGambar = uniqid() . '.' . $gambarBarang->getClientOriginalExtension();
-            $gambarBarang->move(public_path('gambar-barang'), $namaGambar);
-
-            $data['gambar_barang'] = 'gambar-barang/' . $namaGambar;
+        if ($request->file('gambar_barang')) {
+            $data['gambar_barang'] = $request->file('gambar_barang')->store('gambar-barang');
         }
 
         $data['status'] = 'aktif';
@@ -44,9 +44,11 @@ class LelangBarangController extends Controller
 
         return response()->json($lelang, 201);
     }
-    
-    
-    public function update(Request $request, $id) {
+
+
+
+    public function update(Request $request, $id)
+    {
         $barang = LelangBarang::findOrFail($id);
 
         $data = $request->validate([
@@ -61,17 +63,13 @@ class LelangBarangController extends Controller
             'bid_time'      => 'sometimes|nullable|date_format:Y-m-d H:i:s',
         ]);
 
-        if ($request->hasFile('gambar_barang')) {
-            if ($barang->gambar_barang && file_exists(public_path($barang->gambar_barang))) {
-                unlink(public_path($barang->gambar_barang));
-            }
-
-            $gambarBarang = $request->file('gambar_barang');
-            $namaGambar = uniqid() . '.' . $gambarBarang->getClientOriginalExtension();
-            $gambarBarang->move(public_path('gambar-barang'), $namaGambar);
-
-            $data['gambar_barang'] = 'gambar-barang/' . $namaGambar;
+        if ($request->file('gambar_barang')) {
+            if ($barang->gambar_barang && Storage::exists($barang->gambar_barang)) {
+            Storage::delete($barang->gambar_barang);
         }
+            $data['gambar_barang'] = $request->file('gambar_barang')->store('gambar-barang');
+        }
+        
 
         $barang->update($data);
 
@@ -82,7 +80,8 @@ class LelangBarangController extends Controller
     }
 
     // Hapus barang
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $barang = LelangBarang::find($id);
 
         if (!$barang) {
