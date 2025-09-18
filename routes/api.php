@@ -5,10 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\NiplController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HargaBidController;
 use App\Http\Controllers\LelangBarangController;
 use App\Http\Controllers\NiplCheckoutController;
-use App\Http\Controllers\Api\ApiCheckoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,13 +95,13 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
     // Barang
 
     // Detail barang
-    Route::get('/checkout/item/{id}', [ApiCheckoutController::class, 'showItem']);
+    Route::get('/checkout/item/{id}', [CheckoutController::class, 'showItem']);
 
     // Daftar transaksi user login
-    Route::get('/checkout/transactions', [ApiCheckoutController::class, 'transactions']);
+    Route::get('/checkout/transactions', [CheckoutController::class, 'transactions']);
 
     // Buat pembayaran (generate invoice)
-    Route::post('/checkout/payment', [ApiCheckoutController::class, 'payment']);
-});
+    Route::post('/checkout/payment', [CheckoutController::class, 'payment']);
 
+});
 Route::post('/notification/webhook', [NiplCheckoutController::class, 'webhook']);
