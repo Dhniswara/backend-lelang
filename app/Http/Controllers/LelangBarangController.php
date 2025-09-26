@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\HargaBid;
 use App\Models\LelangBarang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -11,7 +12,7 @@ class LelangBarangController extends Controller
 
     public function index()
     {
-        $items = LelangBarang::with('category')->get();
+        $items = LelangBarang::with(['category'])->get();
         return response()->json($items);
     }
 
@@ -28,7 +29,7 @@ class LelangBarangController extends Controller
             'nama_barang'   => 'required|string|max:255',
             'kategori_id'   => 'required|exists:categories,id',
             'deskripsi'     => 'required|string',
-            'harga_awal'    => 'required|integer|min:0',
+            'harga_awal'    => 'required|min:0|numeric',
             'waktu_mulai'   => 'required|date_format:Y-m-d H:i:s',
             'waktu_selesai' => 'required|date_format:Y-m-d H:i:s|after:waktu_mulai',
             'bid_time'      => 'nullable'
@@ -46,7 +47,6 @@ class LelangBarangController extends Controller
     }
 
 
-
     public function update(Request $request, $id)
     {
         $barang = LelangBarang::findOrFail($id);
@@ -56,11 +56,10 @@ class LelangBarangController extends Controller
             'nama_barang'   => 'sometimes|required|string|max:255',
             'kategori_id'   => 'sometimes|exists:categories,id',
             'deskripsi'     => 'sometimes|nullable|string',
-            'harga_awal'    => 'sometimes|required|integer',
-            'waktu_mulai'   => 'sometimes|required|date_format:Y-m-d H:i:s',
-            'waktu_selesai' => 'sometimes|required|date_format:Y-m-d H:i:s|after:waktu_mulai',
+            'harga_awal'    => 'sometimes|numeric',
+            'waktu_mulai'   => 'sometimes|date_format:Y-m-d H:i:s',
+            'waktu_selesai' => 'sometimes|date_format:Y-m-d H:i:s|after:waktu_mulai',
             'status'        => 'sometimes',
-            'bid_time'      => 'sometimes|nullable|date_format:Y-m-d H:i:s',
         ]);
 
         if ($request->file('gambar_barang')) {

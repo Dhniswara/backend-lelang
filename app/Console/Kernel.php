@@ -18,20 +18,35 @@ class Kernel extends ConsoleKernel
 
         // app/Console/Kernel.php (bagian schedule)
         $schedule->call(function () {
-            $now = Carbon::now('Asia/Jakarta');
+        $now = Carbon::now('Asia/Jakarta');
 
-            $lelangs = LelangBarang::where('status', '!=', 'selesai')
-                ->where('waktu_selesai', '<=', $now)
-                ->get();
+        $lelangs = LelangBarang::where('status', '!=', 'selesai')
+            ->where('waktu_selesai', '<=', $now)
+            ->get();
 
-            foreach ($lelangs as $lelang) {
+        foreach ($lelangs as $lelang) {
+            // Ambil bid tertinggi untuk lelang ini
+            $highestBid = $lelang->bids()->orderBy('harga', 'desc')->first();
+
+            if ($highestBid) {
+                $lelang->winner_id = $highestBid->user_id;
+                $lelang->harga_akhir = $highestBid->harga;
                 $lelang->status = 'selesai';
                 $lelang->save();
 
-                Log::info("Dispatching LelangSelesaiEvent for id: {$lelang->id}");
-                event(new LelangUpdateStatus($lelang));
+                Log::info("Lelang {$lelang->id} selesai. Pemenang: {$highestBid->user_id} dengan harga: {$highestBid->harga}");
+            } else {
+                // Jika tidak ada bid, status tetap selesai tapi tanpa pemenang
+                $lelang->status = 'selesai';
+                $lelang->save();
+
+                Log::info("Lelang {$lelang->id} selesai tanpa pemenang.");
             }
-        })->everyMinute();
+
+            // Trigger event untuk notifikasi
+            event(new LelangUpdateStatus($lelang));
+        }
+    })->everyMinute();
     }
     /**
      * Register the commands for the application.

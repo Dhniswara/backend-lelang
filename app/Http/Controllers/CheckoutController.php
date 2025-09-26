@@ -112,4 +112,6 @@ class CheckoutController extends Controller
 
         return response()->json('Success');
     }
+
+    
 }

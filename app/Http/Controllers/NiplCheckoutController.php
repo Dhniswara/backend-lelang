@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Nipl;
-use App\Models\NiplTransaction;
+use Xendit\Configuration;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Xendit\Invoice\InvoiceApi;
+use App\Models\NiplTransaction;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use Xendit\Configuration;
-use Xendit\Invoice\InvoiceApi;
 use Xendit\Invoice\CreateInvoiceRequest;
 
 class NiplCheckoutController extends Controller
@@ -42,7 +43,7 @@ class NiplCheckoutController extends Controller
                 "email" => $user->email,
                 "no_telepon" => $request->no_telepon,
             ],
-            "success_redirect_url" => url('/nipl/success'),
+            "success_redirect_url" => "http://localhost:3000/home",
             "failure_redirect_url" => url('/nipl/failed'),
         ]);
 
@@ -51,6 +52,7 @@ class NiplCheckoutController extends Controller
         // Simpan transaksi
         NiplTransaction::create([
             'user_id'       => $user->id,
+            'email'         => $user->email,
             'external_id'   => $uuid,
             'checkout_link' => $result['invoice_url'],
             'no_telepon'    => $request->no_telepon,

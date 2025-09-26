@@ -15,17 +15,18 @@ return new class extends Migration
             $table->id();
             $table->string('gambar_barang');
             $table->string('nama_barang');
-            $table->unsignedBigInteger('kategori_id');
+            $table->unsignedBigInteger('kategori_id')->nullable();
+            $table->unsignedBigInteger('winner_id')->nullable();
             $table->text('deskripsi');
-            $table->decimal('harga_awal', 15,2);
-            $table->decimal('harga_akhir', 15,2)->nullable();
+            $table->unsignedBigInteger('harga_awal');
+            $table->unsignedBigInteger('harga_akhir')->nullable();
             $table->dateTime('waktu_mulai');
             $table->dateTime('waktu_selesai');
             $table->enum('status', ['aktif', 'selesai', 'dibatalkan'])->default('aktif');
-            $table->dateTime('bid_time')->nullable(); 
             $table->timestamps();
 
-            $table->foreign('kategori_id')->references('id')->on('categories')->onDelete('cascade');
+            $table->foreign('kategori_id')->references('id')->on('categories')->onDelete('set null');
+            $table->foreign('winner_id')->references('id')->on('users')->onDelete('set null');
         });
     }
 
