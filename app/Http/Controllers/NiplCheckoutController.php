@@ -35,7 +35,7 @@ class NiplCheckoutController extends Controller
 
         $createInvoiceRequest = new CreateInvoiceRequest([
             'external_id'  => $uuid,
-            'description'  => 'Pembelian NIPL',
+            'description'  => 'Pembelian NIPL', 
             'amount'       => 25000, 
             'currency'     => 'IDR',
             "customer"     => [

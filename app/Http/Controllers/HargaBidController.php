@@ -13,7 +13,7 @@ class HargaBidController extends Controller
     public function index() {
         $allData = HargaBid::with(['user', 'lelang'])->get();
 
-        return response()->json($allData);
+        return response()->json($allData); 
     }
 
     public function store(Request $request) {
