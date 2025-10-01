@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\HargaBid;
 use App\Models\LelangBarang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -10,11 +9,80 @@ use Illuminate\Support\Facades\Storage;
 class LelangBarangController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $items = LelangBarang::with(['category'])->get();
-        return response()->json($items);
+        $query = LelangBarang::with(['category']);
+
+        if ($request->filled('kategori_id')) {
+            $query->where('kategori_id', $request->kategori_id);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('min_harga')) {
+            $query->where('harga_awal', '>=', $request->min_harga);
+        }
+        if ($request->filled('max_harga')) {
+            $query->where('harga_awal', '<=', $request->max_harga);
+        }
+
+        if ($request->filled('nama_barang')) {
+            $query->where('nama_barang', 'like', '%' . $request->nama_barang . '%');
+        }
+
+        // Jika ?all=true maka ambil semua data tanpa pagination
+        if ($request->boolean('all')) {
+            $items = $query->get();
+
+            if ($items->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Tidak ada barang dengan filter yang diinginkan',
+                    'data'    => [],
+                    'meta'    => null,
+                ], 200);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Daftar barang lelang',
+                'data'    => $items,
+                'meta'    => null,
+            ], 200);
+        }
+
+        // Default: paginated
+        $items = $query->paginate(10);
+
+        if ($items->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada barang dengan ketentuan filter yang diinginkan',
+                'data'    => [],
+                'meta'    => [
+                    'current_page' => $items->currentPage(),
+                    'last_page'    => $items->lastPage(),
+                    'per_page'     => $items->perPage(),
+                    'total'        => $items->total(),
+                ]
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Daftar barang lelang',
+            'data'    => $items->items(),
+            'meta'    => [
+                'current_page' => $items->currentPage(),
+                'last_page'    => $items->lastPage(),
+                'per_page'     => $items->perPage(),
+                'total'        => $items->total(),
+            ]
+        ], 200);
     }
+
 
     public function show($id)
     {
@@ -64,11 +132,11 @@ class LelangBarangController extends Controller
 
         if ($request->file('gambar_barang')) {
             if ($barang->gambar_barang && Storage::exists($barang->gambar_barang)) {
-            Storage::delete($barang->gambar_barang);
-        }
+                Storage::delete($barang->gambar_barang);
+            }
             $data['gambar_barang'] = $request->file('gambar_barang')->store('gambar-barang');
         }
-        
+
 
         $barang->update($data);
 

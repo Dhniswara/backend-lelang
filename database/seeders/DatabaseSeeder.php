@@ -19,22 +19,36 @@ class DatabaseSeeder extends Seeder
 
         User::insert([
             [
-            'name' => 'user',
-            'email' => 'user@gmail.com',
-            'role' => 'user',
-            'password' => bcrypt('password')
+                'name' => 'user',
+                'email' => 'user@gmail.com',
+                'role' => 'user',
+                'password' => bcrypt('password')
             ],
             [
-            'name' => 'admin',
-            'email' => 'admin@gmail.com',
-            'role' => 'admin',
-            'password' => bcrypt('password')
-        ]
+                'name' => 'admin',
+                'email' => 'admin@gmail.com',
+                'role' => 'admin',
+                'password' => bcrypt('password')
+            ]
         ]);
 
-        Category::create([
-            'nama_kategori' => "Kendaraan",
-            "deskripsi"     => "Untuk Kendaraan"
+        Category::insert([
+            [
+                'nama_kategori' => "Kendaraan",
+                "deskripsi"     => "Untuk Kendaraan"
+            ],
+            [
+                'nama_kategori' => "Rumah",
+                "deskripsi"     => "Untuk Rumah"
+            ],
+            [
+                'nama_kategori' => "Barang Antik",
+                "deskripsi"     => "Untuk Rumah"
+            ],
+            [
+                'nama_kategori' => "Perlengkapan Olahraga",
+                "deskripsi"     => "Untuk Rumah"
+            ],
         ]);
     }
 }

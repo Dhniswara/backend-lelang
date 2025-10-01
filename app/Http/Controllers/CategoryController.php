@@ -7,17 +7,35 @@ use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-     public function index() {
-        $categories = Category::all();
+    public function index(Request $request)
+    {
+        $query = Category::query();
+        
+        if ($request->filled('nama_kategori')) {
+            $query->where('nama_kategori', 'like', '%' . $request->nama_kategori . '%');
+        }
+
+        if ($request->filled('deskripsi')) {
+            $query->where('deskripsi', 'like', '%' . $request->deskripsi . '%');
+        }
+
+        $categories = $query->paginate(5);
 
         return response()->json([
             'success' => true,
             'message' => 'Daftar kategori',
-            'data'    => $categories
+            'data'    => $categories->items(),
+            'meta'    => [
+                'current_page' => $categories->currentPage(),
+                'last_page'    => $categories->lastPage(),
+                'per_page'     => $categories->perPage(),
+                'total'        => $categories->total(),
+            ]
         ], 200);
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
         $request->validate([
             'nama_kategori' => 'required|string|max:255|unique:categories,nama_kategori',
             'deskripsi' => 'string',
@@ -36,7 +54,8 @@ class CategoryController extends Controller
     }
 
     // Menampilkan detail kategori tertentu
-    public function show($id) {
+    public function show($id)
+    {
         $category = Category::find($id);
 
         if (!$category) {
@@ -54,7 +73,8 @@ class CategoryController extends Controller
     }
 
     // Update kategori
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $category = Category::find($id);
 
         if (!$category) {
@@ -72,7 +92,7 @@ class CategoryController extends Controller
         $category->update([
             'nama_kategori' => $request->nama_kategori ?? $category->nama_kategori,
             'deskripsi' => $request->deskripsi ?? $category->deskripsi,
-        ]); 
+        ]);
 
         return response()->json([
             'success' => true,
@@ -81,7 +101,8 @@ class CategoryController extends Controller
         ], 200);
     }
 
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $category = Category::find($id);
 
         if (!$category) {
