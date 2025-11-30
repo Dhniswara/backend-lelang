@@ -35,7 +35,7 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     Route::get('/user/all', [AuthController::class, 'user']);
     
-    Route::get('/user', [AuthController::class, 'user']);
+    Route::get('/user', [AuthController::class, 'getUser']);
 
     // Get User yang login
     Route::get('/user/isLogin', function (Request $request) {
@@ -56,7 +56,8 @@ Route::group(['middleware' => 'auth:sanctum'], function () {
 
     // Menampilkan NIPL untuk user
     Route::prefix('nipl')->group(function () {
-        Route::get('/', [NiplController::class, 'index']);
+        Route::get('/', [NiplController::class, 'index'])->middleware('isadmin');
+        Route::get('/checkNipl', [NiplController::class, 'checkNipl']);
         Route::get('/{id}', [NiplController::class, 'show']);
     });
 

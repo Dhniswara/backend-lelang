@@ -32,7 +32,6 @@ class LelangBarangController extends Controller
             $query->where('nama_barang', 'like', '%' . $request->nama_barang . '%');
         }
 
-        // Jika ?all=true maka ambil semua data tanpa pagination
         if ($request->boolean('all')) {
             $items = $query->get();
 

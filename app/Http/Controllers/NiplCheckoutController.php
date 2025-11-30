@@ -43,7 +43,8 @@ class NiplCheckoutController extends Controller
                 "email" => $user->email,
                 "no_telepon" => $request->no_telepon,
             ],
-            "success_redirect_url" => "http://localhost:3000/home",
+            // "success_redirect_url" => "http://localhost:3000/home",
+            "success_redirect_url" => "http://localhost:8000/success",
             "failure_redirect_url" => url('/nipl/failed'),
         ]);
 
@@ -64,42 +65,6 @@ class NiplCheckoutController extends Controller
             'message' => 'Silakan lakukan pembayaran',
             'invoice_url' => $result['invoice_url'],
             'external_id' => $uuid
-        ]);
-    }
-
-    // Webhook 
-    public function notification(Request $request, $id) {
-        $apiInstance = new InvoiceApi();
-        $result = $apiInstance->getInvoices(null, $id);
-        $status = strtoupper($result[0]['status']);
-
-        // Get data
-        $transaction = NiplTransaction::where('external_id', $id)->firstOrFail();
-
-        if (! $transaction) {
-            return response()->json(['message' => 'Transaksi tidak ditemukan'], 404);
-        }
-
-        $transaction->status = $result[0]['status'];
-        $transaction->save();
-
-        // Kalau sudah sukses, buatkan NIPL untuk user
-        if ($status === 'PAID' || $status === 'SETTLED') {
-            if (!Nipl::where('user_id', $transaction->user_id)->exists()) {
-                $noNipl = str_pad(mt_rand(0, 999999), 8, '0', STR_PAD_LEFT);
-
-                Nipl::create([
-                    'user_id'     => $transaction->user_id,
-                    'no_nipl'     => $noNipl,
-                    'email'       => Auth::user()->email,
-                    'no_telepon'  => $transaction->no_telepon,
-                ]);
-            }
-        }
-
-        return response()->json([
-            'message' => 'Status transaksi diperbarui',
-            'status' => $transaction->status
         ]);
     }
 

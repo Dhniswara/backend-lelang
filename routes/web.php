@@ -1,7 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\NiplCheckoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,4 +38,7 @@ Route::get('/transactions', [CheckoutController::class, 'transactions'])->name('
 
 Route::post('/payment', [CheckoutController::class, 'payment'])->name('payment');
 Route::get('/notification/{id}', [CheckoutController::class, 'notification'])->name('notification');
+
+Route::get('/success', [WebhookController::class, 'success'])->name('view.success');
+
 

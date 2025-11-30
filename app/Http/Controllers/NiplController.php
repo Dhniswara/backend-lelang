@@ -4,18 +4,25 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Nipl;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
 class NiplController extends Controller
 {
 
     public function index(Request $request) {
-        $user = $request->user();
-        $nipl = Nipl::where('user_id', $user->id)->get();
+        $nipl = Nipl::all();
 
         return response()->json([
             'message' => 'Daftar Nipl user.', 
+            'data' => $nipl
+        ], 200);
+    }
+    
+    public function checkNipl(Request $request) {
+        $user = $request->user();
+        $nipl = Nipl::where('user_id', $user->id)->first();
+
+        return response()->json([
+            'message' => 'Detail Nipl user.', 
             'data' => $nipl
         ], 200);
     }

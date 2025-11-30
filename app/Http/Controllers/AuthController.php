@@ -9,7 +9,8 @@ use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
 
         $data =  $request->validate([
             'avatar'    => 'image|mimes:jpeg,png,jpg,svg|max:2048|nullable',
@@ -35,7 +36,8 @@ class AuthController extends Controller
         return response()->json(['error' => 'User not created'], 400);
     }
 
-    public function update(Request $request, $id) {
+    public function update(Request $request, $id)
+    {
         $user = User::findOrFail($id);
 
         $data = $request->validate([
@@ -48,8 +50,8 @@ class AuthController extends Controller
 
         if ($request->file('avatar')) {
             if ($user->avatar && Storage::exists($user->avatar)) {
-            Storage::delete($user->avatar);
-        }
+                Storage::delete($user->avatar);
+            }
             $data['avatar'] = $request->file('avatar')->store('avatar');
         }
 
@@ -70,7 +72,8 @@ class AuthController extends Controller
 
 
 
-    public function login(Request $request) {
+    public function login(Request $request)
+    {
         $data =  $request->validate([
             'email'     => 'required|email',
             'password'  => 'required|min:8'
@@ -91,7 +94,8 @@ class AuthController extends Controller
         }
     }
 
-    public function logout(Request $request) {
+    public function logout(Request $request)
+    {
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
@@ -100,9 +104,15 @@ class AuthController extends Controller
     }
 
 
-    public function user() {
+    public function user()
+    {
         $user = User::all();
 
         return response()->json($user);
+    }
+
+    public function getUser(Request $request)
+    {
+        return response()->json($request->user());
     }
 }

@@ -79,4 +79,8 @@ class WebhookController extends Controller
         ]);
     }
 
+    public function success() {
+        return view('success.success');
+    }
+
 }
